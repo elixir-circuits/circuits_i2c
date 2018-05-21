@@ -1,15 +1,15 @@
-defmodule ElixirAle.MixProject do
+defmodule I2C.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :elixir_ale,
-      version: "1.0.3",
+      app: :i2c,
+      version: "0.1.0",
       elixir: "~> 1.2",
-      name: "elixir_ale",
+      name: "i2c",
       description: description(),
       package: package(),
-      source_url: "https://github.com/fhunleth/elixir_ale",
+      source_url: "https://github.com/ElixirCircuits/i2c",
       compilers: [:elixir_make] ++ Mix.compilers(),
       make_clean: ["clean"],
       docs: [extras: ["README.md"]],
@@ -23,7 +23,7 @@ defmodule ElixirAle.MixProject do
   def application, do: []
 
   defp description do
-    "Elixir access to hardware GPIO, I2C, and SPI interfaces."
+    "Elixir access to the hardware I2C interfaces."
   end
 
   defp package do
@@ -37,9 +37,9 @@ defmodule ElixirAle.MixProject do
         "LICENSE",
         "Makefile"
       ],
-      maintainers: ["Frank Hunleth"],
+      maintainers: ["Frank Hunleth", "Matt Ludwigs"],
       licenses: ["Apache-2.0"],
-      links: %{"GitHub" => "https://github.com/fhunleth/elixir_ale"}
+      links: %{"GitHub" => "https://github.com/ElixirCircuits/i2c"}
     }
   end
 
