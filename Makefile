@@ -40,16 +40,20 @@ endif
 ERL_CFLAGS ?= -I$(ERL_EI_INCLUDE_DIR)
 ERL_LDFLAGS ?= -L$(ERL_EI_LIBDIR) -lei
 
-LDFLAGS +=
+LDFLAGS += -fPIC -shared -pedantic
 CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter
 CC ?= $(CROSSCOMPILE)-gcc
+
+NIF=priv/i2c_nif.so
 
 SRC=$(wildcard src/*.c)
 OBJ=$(SRC:.c=.o)
 
 .PHONY: all clean
 
-all: $(DEFAULT_TARGETS)
+all: priv $(NIF) 
+
+$(OBJ): $(wildcard src/*.h)
 
 %.o: %.c
 	$(CC) -c $(ERL_CFLAGS) $(CFLAGS) -o $@ $<
@@ -57,8 +61,8 @@ all: $(DEFAULT_TARGETS)
 priv:
 	mkdir -p priv
 
-priv/ale: $(OBJ)
+$(NIF): $(OBJ)
 	$(CC) $^ $(ERL_LDFLAGS) $(LDFLAGS) -o $@
 
 clean:
-	rm -f priv/ale src/*.o
+	rm $(NIF) src/*.o
