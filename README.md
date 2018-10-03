@@ -9,7 +9,7 @@ sysclass interface so that it does not require platform-dependent code.
 
 # Getting started
 
-If you're natively compiling elixir_ale, everything should work like any other
+If you're natively compiling i2c, everything should work like any other
 Elixir library. Normally, you would include elixir_ale as a dependency in your
 `mix.exs` like this:
 
@@ -68,37 +68,37 @@ Here's a simple example of using it.
 ```Elixir
 # On the Raspberry Pi, the IO expander is connected to I2C bus 1 (i2c-1).
 # Its 7-bit address is 0x20. (see datasheet)
-iex> {:ok, pid} = I2C.start_link("i2c-1", 0x20)
-{:ok, #PID<0.102.0>}
+iex> {:ok, fd} = ElixirCircuits.I2C.open("i2c-1")
+{:ok, 34}
 
 # By default, all 8 GPIOs are set to inputs. Set the 4 high bits to outputs
 # so that we can toggle the LEDs. (Write 0x0f to register 0x00)
-iex> I2C.write(pid, <<0x00, 0x0f>>)
+iex> ElixirCircuits.I2C.write(fd, 0x20, <<0x00, 0x0f>>)
 :ok
 
 # Turn on the LED attached to bit 4 on the expander. (Write 0x10 to register
 # 0x09)
-iex> I2C.write(pid, <<0x09, 0x10>>)
+iex> ElixirCircuits.I2C.write(fd, 0x20, <<0x09, 0x10>>)
 :ok
 
 # Read all 11 of the expander's registers to see that the bit 0 switch is
 # the only one on and that the bit 4 LED is on.
-iex> I2C.write(pid, <<0>>)  # Set the next register to be read to 0
+iex> ElixirCircuits.I2C.write(fd, 0x20, <<0>>)  # Set the next register to be read to 0
 :ok
 
-iex> I2C.read(pid, 11)
-<<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>
+iex> ElixirCircuits.I2C.read(fd, 0x20, 11)
+{:ok, <<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>}
 
 # The operation of writing one or more bytes to select a register and
 # then reading is very common, so a shortcut is to just run the following:
-iex> I2C.write_read(pid, <<0>>, 11)
-<<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>
+iex> ElixirCircuits.I2C.write_read(fd, 0x20, <<0>>, 11)
+{:ok, <<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>}
 
 # The 17 in register 9 says that bits 0 and bit 4 are high
 # We could have just read register 9.
 
-iex> I2C.write_read(pid, <<9>>, 1)
-<<17>>
+iex> ElixirCircuits.I2C.write_read(fd, 0x20, <<9>>, 1)
+{:ok, <<17>>}
 ```
 
 ## FAQ
@@ -150,7 +150,7 @@ kernel and that the device tree configures it.
 Once an I2C bus is available, try detecting devices on it:
 
 ```elixir
-iex> I2C.detect_devices("i2c-1")
+iex> ElixirCircuits.I2C.detect_devices("i2c-1")
 [4]
 ```
 
@@ -163,7 +163,7 @@ to verify that I2C transactions are being initiated on the bus.
 
 No. I2c  only runs on Linux-based boards. If you're interested in controlling an Arduino from a computer that can run Elixir, check out [nerves_uart](https://hex.pm/packages/nerves_uart) for communicating via the Arduino's serial connection or [firmata](https://github.com/mobileoverlord/firmata) for communication using the Arduino's Firmata protocol.
 
-### Can I help maintain elixir_ale?
+### Can I help maintain elixir_circuits?
 
 Yes! If your life has been improved by `i2c` and you want to give back,
 it would be great to have new energy put into this project. Please email me.
