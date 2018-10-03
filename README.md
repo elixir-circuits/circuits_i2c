@@ -1,7 +1,7 @@
 # I2C - Do not use !!
 
-#[![Build Status](https://travis-ci.org/fhunleth/elixir_ale.svg)](https://travis-ci.org/fhunleth/elixir_ale)
-#[![Hex version](https://img.shields.io/hexpm/v/elixir_ale.svg "Hex version")](https://hex.pm/packages/elixir_ale)
+[![Build Status](https://travis-ci.org/fhunleth/elixir_circuits.i2c.svg)](https://travis-ci.org/fhunleth/elixir_circuits_i2c)
+[![Hex version](https://img.shields.io/hexpm/v/elixir_circuits_i2c.svg "Hex version")](https://hex.pm/packages/elixir_ale)
 
 `i2c` provides high level abstractions for interfacing to I2C
 buses on Linux platforms. Internally, it uses the Linux
@@ -135,7 +135,7 @@ The most common issue is communicating with an I2C for the first time.
 For I2C, first check that an I2C bus is available:
 
 ```elixir
-iex> I2C.device_names
+iex> ElixirCircuits.I2C.device_names
 ["i2c-1"]
 ```
 
