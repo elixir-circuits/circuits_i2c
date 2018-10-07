@@ -1,7 +1,7 @@
 # I2C - Do not use !!
 
-[![Build Status](https://travis-ci.org/fhunleth/elixir_circuits.i2c.svg)](https://travis-ci.org/fhunleth/elixir_circuits_i2c)
-[![Hex version](https://img.shields.io/hexpm/v/elixir_circuits_i2c.svg "Hex version")](https://hex.pm/packages/elixir_ale)
+[![CircleCI](https://circleci.com/gh/ElixirCircuits/i2c.svg?style=svg)](https://circleci.com/gh/ElixirCircuits/i2c)
+[![Hex version](https://img.shields.io/hexpm/v/i2c.svg "Hex version")](https://hex.pm/packages/i2c)
 
 `i2c` provides high level abstractions for interfacing to I2C
 buses on Linux platforms. Internally, it uses the Linux
@@ -22,7 +22,7 @@ end
 If you just want to try it out, you can do the following:
 
 ```shell
-git clone https://github.com/ElixirCircuits/i2c 
+git clone https://github.com/ElixirCircuits/i2c
 cd i2c
 mix compile
 iex -S mix
