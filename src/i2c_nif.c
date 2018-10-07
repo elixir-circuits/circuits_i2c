@@ -19,13 +19,13 @@
 #include <err.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <bits/stdint-uintn.h>
 
 #include "linux/i2c-dev.h"
 #include "erl_nif.h"
@@ -60,8 +60,8 @@
  */
 static int i2c_transfer(int fd,
                         unsigned int addr,
-                        const char *to_write, size_t to_write_len,
-                        char *to_read, size_t to_read_len)
+                        const uint8_t *to_write, size_t to_write_len,
+                        uint8_t *to_read, size_t to_read_len)
 {
     struct i2c_rdwr_ioctl_data data;
     struct i2c_msg msgs[2];
@@ -115,7 +115,7 @@ static ERL_NIF_TERM read_i2c(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     int fd;
     unsigned int addr;
     unsigned long read_len;
-    char read_data[I2C_BUFFER_MAX];
+    uint8_t read_data[I2C_BUFFER_MAX];
     ErlNifBinary bin_read;
 
     if (!enif_get_int(env, argv[0], &fd))
@@ -165,7 +165,7 @@ static ERL_NIF_TERM write_read_i2c(ErlNifEnv *env, int argc, const ERL_NIF_TERM 
     int fd;
     unsigned int addr;
     ErlNifBinary bin_write;
-    char read_data[I2C_BUFFER_MAX];
+    uint8_t read_data[I2C_BUFFER_MAX];
     unsigned long read_len;
     ErlNifBinary bin_read;
 
