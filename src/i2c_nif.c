@@ -94,17 +94,17 @@ static int i2c_transfer(int fd,
 static ERL_NIF_TERM open_i2c(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
     char device[32];
-    char devpath[64]="/dev/"; 
+    char devpath[64]="/dev/";
 
     if (!enif_get_string(env, argv[0], (char*)&device, sizeof(device), ERL_NIF_LATIN1))
         return enif_make_badarg(env);
 
     strncat(devpath, device, sizeof(device));
-    
+
     int fd = open(devpath, O_RDWR);
     if (fd < 0)
-        return enif_make_tuple2(env, enif_make_atom(env, "error"), 
-                                     enif_make_atom(env, "access_denied"));
+        return enif_make_tuple2(env, enif_make_atom(env, "error"),
+                                enif_make_atom(env, "access_denied"));
 
     return enif_make_tuple2(env, enif_make_atom(env, "ok"), enif_make_int(env, fd));
 }
@@ -127,12 +127,12 @@ static ERL_NIF_TERM read_i2c(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     if (!enif_get_ulong(env, argv[2], &read_len))
         return enif_make_badarg(env);
 
-    if (i2c_transfer(fd, addr, 0, 0, read_data, read_len)){
+    if (i2c_transfer(fd, addr, 0, 0, read_data, read_len)) {
         bin_read.data = read_data;
         bin_read.size = read_len;
         return enif_make_tuple2(env, enif_make_atom(env, "ok"), enif_make_binary(env, &bin_read));
     }
-    else 
+    else
         return enif_make_tuple2(env, enif_make_atom(env, "error"), enif_make_atom(env, "read_failed"));
 }
 
@@ -150,12 +150,12 @@ static ERL_NIF_TERM write_i2c(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
         return enif_make_badarg(env);
 
     if (!enif_inspect_binary(env, argv[2], &bin_write))
-       return enif_make_badarg(env);
+        return enif_make_badarg(env);
 
-    if (i2c_transfer(fd, addr, bin_write.data, bin_write.size, 0, 0)){
+    if (i2c_transfer(fd, addr, bin_write.data, bin_write.size, 0, 0)) {
         return enif_make_atom(env, "ok");
     }
-    else 
+    else
         return enif_make_tuple2(env, enif_make_atom(env, "error"), enif_make_atom(env, "write_failed"));
 }
 
@@ -176,17 +176,17 @@ static ERL_NIF_TERM write_read_i2c(ErlNifEnv *env, int argc, const ERL_NIF_TERM 
         return enif_make_badarg(env);
 
     if (!enif_inspect_binary(env, argv[2], &bin_write))
-       return enif_make_badarg(env);
-    
-    if (!enif_get_ulong(env, argv[3], &read_len))
-       return enif_make_badarg(env);
+        return enif_make_badarg(env);
 
-    if (i2c_transfer(fd, addr, bin_write.data, bin_write.size, read_data, read_len)){
+    if (!enif_get_ulong(env, argv[3], &read_len))
+        return enif_make_badarg(env);
+
+    if (i2c_transfer(fd, addr, bin_write.data, bin_write.size, read_data, read_len)) {
         bin_read.data = read_data;
         bin_read.size = read_len;
         return enif_make_tuple2(env, enif_make_atom(env, "ok"), enif_make_binary(env, &bin_read));
     }
-    else 
+    else
         return enif_make_tuple2(env, enif_make_atom(env, "error"), enif_make_atom(env, "write_read_failed"));
 }
 

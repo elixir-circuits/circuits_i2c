@@ -9,11 +9,13 @@
 # LDFLAGS	linker flags for linking all binaries
 # ERL_LDFLAGS	additional linker flags for projects referencing Erlang libraries
 
+NIF=priv/i2c_nif.so
+
 # Check that we're on a supported build platform
 ifeq ($(CROSSCOMPILE),)
     # Not crosscompiling, so check that we're on Linux.
     ifneq ($(shell uname -s),Linux)
-        $(warning Elixir ALE only works on Linux, but crosscompilation)
+        $(warning Elixir Circuits only works on Linux, but crosscompilation)
         $(warning is supported by defining $$CROSSCOMPILE, $$ERL_EI_INCLUDE_DIR,)
         $(warning and $$ERL_EI_LIBDIR. See Makefile for details. If using Nerves,)
         $(warning this should be done automatically.)
@@ -22,7 +24,7 @@ ifeq ($(CROSSCOMPILE),)
 	DEFAULT_TARGETS = priv
     endif
 endif
-DEFAULT_TARGETS ?= priv priv/ale
+DEFAULT_TARGETS ?= priv $(NIF)
 
 # Look for the EI library and header files
 # For crosscompiled builds, ERL_EI_INCLUDE_DIR and ERL_EI_LIBDIR must be
@@ -42,27 +44,20 @@ ERL_LDFLAGS ?= -L$(ERL_EI_LIBDIR) -lei
 
 LDFLAGS += -fPIC -shared -pedantic
 CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter
-CC ?= $(CROSSCOMPILE)-gcc
-
-NIF=priv/i2c_nif.so
 
 SRC=$(wildcard src/*.c)
-OBJ=$(SRC:.c=.o)
 
 .PHONY: all clean
 
-all: priv $(NIF) 
+all: $(DEFAULT_TARGETS)
 
-$(OBJ): $(wildcard src/*.h)
-
-%.o: %.c
-	$(CC) -c $(ERL_CFLAGS) $(CFLAGS) -o $@ $<
+$(NIF): $(wildcard src/*.h)
 
 priv:
 	mkdir -p priv
 
-$(NIF): $(OBJ)
-	$(CC) $^ $(ERL_LDFLAGS) $(LDFLAGS) -o $@
+$(NIF): $(SRC)
+	$(CC) $(ERL_CFLAGS) $(CFLAGS) $(ERL_LDFLAGS) $(LDFLAGS) -o $@ $^
 
 clean:
-	rm $(NIF) src/*.o
+	rm $(NIF)

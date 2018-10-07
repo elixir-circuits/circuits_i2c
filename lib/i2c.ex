@@ -86,6 +86,7 @@ defmodule ElixirCircuits.I2C do
     case open(devname) do
       {:ok, fd} ->
         Enum.reject(0..127, &(read(fd, &1, 1) == {:error, :read_failed}))
+
       error ->
         error
     end
