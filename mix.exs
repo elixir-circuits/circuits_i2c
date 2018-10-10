@@ -10,6 +10,7 @@ defmodule I2C.MixProject do
       package: package(),
       source_url: "https://github.com/ElixirCircuits/i2c",
       compilers: [:elixir_make | Mix.compilers()],
+      make_targets: ["all"],
       make_clean: ["clean"],
       make_env: make_env(),
       docs: [extras: ["README.md"]],
@@ -17,6 +18,19 @@ defmodule I2C.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
+  end
+
+  defp make_env() do
+    case System.get_env("ERL_EI_INCLUDE_DIR") do
+      nil ->
+        %{
+          "ERL_EI_INCLUDE_DIR" => "#{:code.root_dir()}/usr/include",
+          "ERL_EI_LIBDIR" => "#{:code.root_dir()}/usr/lib"
+        }
+
+      _ ->
+        %{}
+    end
   end
 
   def application, do: []
@@ -64,17 +78,4 @@ defmodule I2C.MixProject do
   end
 
   defp format_c(_args), do: true
-
-  defp make_env() do
-    case System.get_env("ERL_EI_INCLUDE_DIR") do
-      nil ->
-        %{
-          "ERL_EI_INCLUDE_DIR" => "#{:code.root_dir()}/usr/include",
-          "ERL_EI_LIBDIR" => "#{:code.root_dir()}/usr/lib"
-        }
-
-      _ ->
-        %{}
-    end
-  end
 end
