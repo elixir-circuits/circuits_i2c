@@ -2,6 +2,8 @@ defmodule ElixirCircuits.I2C.Nif do
   @on_load {:load_nif, 0}
   @compile {:autoload, false}
 
+  require Logger
+
   @doc """
   Elixir interface to I2C Natively Implemented Funtions (NIFs)
   """
@@ -11,7 +13,9 @@ defmodule ElixirCircuits.I2C.Nif do
 
     case :erlang.load_nif(to_charlist(nif_binary), 0) do
       {:error, reason} ->
-        IO.puts("Error: " <> to_string(reason) <> " Loading: " <> nif_binary)
+        Logger.error(
+          "ElixirCircuits.I2CError: load_nif(#{nif_binary}) failed with #{inspect(reason)}"
+        )
 
       _ ->
         :ok

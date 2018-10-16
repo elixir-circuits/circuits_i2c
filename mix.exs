@@ -33,7 +33,11 @@ defmodule ElixirCircuits.I2C.MixProject do
     end
   end
 
-  def application, do: []
+  def application do
+    [
+      extra_applications: [:logger]
+    ]
+  end
 
   defp description do
     "Elixir access to the hardware I2C interfaces."
