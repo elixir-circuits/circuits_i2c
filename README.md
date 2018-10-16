@@ -1,41 +1,26 @@
-# I2C - Do not use !!
+# ElixirCircuits.I2C
 
-[![CircleCI](https://circleci.com/gh/ElixirCircuits/i2c.svg?style=svg)](https://circleci.com/gh/ElixirCircuits/i2c)
-[![Hex version](https://img.shields.io/hexpm/v/i2c.svg "Hex version")](https://hex.pm/packages/i2c)
+[![CircleCI](https://circleci.com/gh/elixir-circuits/i2c.svg?style=svg)](https://circleci.com/gh/elixir-circuits/i2c)
+[![Hex version](https://img.shields.io/hexpm/v/elixir_circuits_i2c.svg "Hex version")](https://hex.pm/packages/elixir_circuits_i2c)
 
-`i2c` provides high level abstractions for interfacing to I2C
-buses on Linux platforms. Internally, it uses the Linux
-sysclass interface so that it does not require platform-dependent code.
+`ElixirCircuits.I2C` provides high level abstractions for interfacing to I2C
+buses on Linux platforms. Internally, it uses the [Linux device
+interface](https://elixir.bootlin.com/linux/latest/source/Documentation/i2c/dev-interface)
+so that it does not require board-dependent code.
 
 # Getting started
 
-If you're natively compiling i2c, everything should work like any other
-Elixir library. Normally, you would include elixir_ale as a dependency in your
-`mix.exs` like this:
+If you're using Nerves or compiling on a Raspberry Pi or other device with I2C
+support, then add `elixir_circuits_i2c` like any other Elixir library:
 
 ```elixir
 def deps do
-  [{:i2c, "~> 0.1"}]
+  [{:elixir_circuits_i2c, "~> 0.1"}]
 end
 ```
 
-If you just want to try it out, you can do the following:
-
-```shell
-git clone https://github.com/ElixirCircuits/i2c
-cd i2c
-mix compile
-iex -S mix
-```
-
-If you're cross-compiling, you'll need to setup your environment so that the
-right C compiler is called. See the `Makefile` for the variables that will need
-to be overridden. At a minimum, you will need to set `CROSSCOMPILE`,
-`ERL_CFLAGS`, and `ERL_EI_LIBDIR`.
-
-`i2c` doesn't load device drivers, so you'll need to make sure that any
-necessary ones for accessing I2C are loaded beforehand. On the Raspberry
-Pi, the [Adafruit Raspberry Pi I2C
+`ElixirCircuits.I2C` doesn't load device drivers, so you'll need to load any
+necessary ones beforehand.  On the Raspberry Pi, the [Adafruit Raspberry Pi I2C
 instructions](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c)
 may be helpful.
 

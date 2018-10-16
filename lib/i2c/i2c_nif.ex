@@ -7,7 +7,7 @@ defmodule ElixirCircuits.I2C.Nif do
   """
 
   def load_nif() do
-    nif_binary = Application.app_dir(:i2c, "priv/i2c_nif")
+    nif_binary = Application.app_dir(:elixir_circuits_i2c, "priv/i2c_nif")
 
     case :erlang.load_nif(to_charlist(nif_binary), 0) do
       {:error, reason} ->
