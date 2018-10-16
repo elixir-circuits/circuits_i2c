@@ -1,56 +1,35 @@
-# I2C - Do not use !!
+# ElixirCircuits.I2C
 
-[![CircleCI](https://circleci.com/gh/ElixirCircuits/i2c.svg?style=svg)](https://circleci.com/gh/ElixirCircuits/i2c)
-[![Hex version](https://img.shields.io/hexpm/v/i2c.svg "Hex version")](https://hex.pm/packages/i2c)
+[![CircleCI](https://circleci.com/gh/elixir-circuits/i2c.svg?style=svg)](https://circleci.com/gh/elixir-circuits/i2c)
+[![Hex version](https://img.shields.io/hexpm/v/elixir_circuits_i2c.svg "Hex version")](https://hex.pm/packages/elixir_circuits_i2c)
 
-`i2c` provides high level abstractions for interfacing to I2C
-buses on Linux platforms. Internally, it uses the Linux
-sysclass interface so that it does not require platform-dependent code.
+`ElixirCircuits.I2C` provides high level abstractions for interfacing to I2C
+buses on Linux platforms. Internally, it uses the [Linux device
+interface](https://elixir.bootlin.com/linux/latest/source/Documentation/i2c/dev-interface)
+so that it does not require board-dependent code.
 
 # Getting started
 
-If you're natively compiling i2c, everything should work like any other
-Elixir library. Normally, you would include elixir_ale as a dependency in your
-`mix.exs` like this:
+If you're using Nerves or compiling on a Raspberry Pi or other device with I2C
+support, then add `elixir_circuits_i2c` like any other Elixir library:
 
 ```elixir
 def deps do
-  [{:i2c, "~> 0.1"}]
+  [{:elixir_circuits_i2c, "~> 0.1"}]
 end
 ```
 
-If you just want to try it out, you can do the following:
-
-```shell
-git clone https://github.com/ElixirCircuits/i2c
-cd i2c
-mix compile
-iex -S mix
-```
-
-If you're cross-compiling, you'll need to setup your environment so that the
-right C compiler is called. See the `Makefile` for the variables that will need
-to be overridden. At a minimum, you will need to set `CROSSCOMPILE`,
-`ERL_CFLAGS`, and `ERL_EI_LIBDIR`.
-
-`i2c` doesn't load device drivers, so you'll need to make sure that any
-necessary ones for accessing I2C are loaded beforehand. On the Raspberry
-Pi, the [Adafruit Raspberry Pi I2C
+`ElixirCircuits.I2C` doesn't load device drivers, so you'll need to load any
+necessary ones beforehand.  On the Raspberry Pi, the [Adafruit Raspberry Pi I2C
 instructions](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c)
 may be helpful.
 
-If you're trying to compile on a Raspberry Pi and you get errors indicated that Erlang headers are missing
-(`ie.h`), you may need to install erlang with `apt-get install
-erlang-dev` or build Erlang from source per instructions [here](http://elinux.org/Erlang).
-
 # Examples
 
-`i2c` only supports simple uses of the I2C interface in
-Linux, but you can still do quite a bit. The following examples were tested on a
-Raspberry Pi that was connected to an [Erlang Embedded Demo
-Board](http://solderpad.com/omerk/erlhwdemo/). There's nothing special about
-either the demo board or the Raspberry Pi, so these should work similarly on
-other embedded Linux platforms.
+The following examples were tested on a Raspberry Pi that was connected to an
+[Erlang Embedded Demo Board](http://solderpad.com/omerk/erlhwdemo/). There's
+nothing special about either the demo board or the Raspberry Pi, so these should
+work similarly on other embedded Linux platforms.
 
 ## I2C
 
@@ -65,7 +44,7 @@ The protocol for talking to the IO expander is described in the [MCP23008
 Datasheet](http://www.microchip.com/wwwproducts/Devices.aspx?product=MCP23008).
 Here's a simple example of using it.
 
-```Elixir
+```elixir
 # On the Raspberry Pi, the IO expander is connected to I2C bus 1 (i2c-1).
 # Its 7-bit address is 0x20. (see datasheet)
 iex> {:ok, ref} = ElixirCircuits.I2C.open("i2c-1", 0x20)
@@ -103,32 +82,6 @@ iex> ElixirCircuits.I2C.write_read(ref, <<9>>, 1)
 
 ## FAQ
 
-### Where can I get help?
-
-Most issues people have are on how to communicate with hardware for the first
-time. Since `i2c` is a thin wrapper on the Linux sys class interface, you
-may find help by searching for similar issues when using Python or C.
-
-For help specifically with `i2c`, you may also find help on the
-nerves channel on the [elixir-lang Slack](https://elixir-slackin.herokuapp.com/).
-Many [Nerves](http://nerves-project.org) users also use `i2c`.
-
-### Where's PWM support?
-
-On the hardware that I normally use, PWM has been implemented in a
-platform-dependent way. For ease of maintenance, `i2c` doesn't have any
-platform-dependent code, so supporting it would be difficult. An Elixir PWM
-library would be very interesting, though, should anyone want to implement it.
-
-### Can I develop code that uses i2c on my laptop?
-
-You'll need to fake out the hardware. Code to do this depends
-on what your hardware actually does, but here's one example:
-
-  * http://www.cultivatehq.com/posts/compiling-and-testing-elixir-nerves-on-your-host-machine/
-
-Please share other examples if you have them.
-
 ### How do I debug?
 
 The most common issue is communicating with an I2C for the first time.
@@ -159,17 +112,35 @@ still possible that the device will work even if it does not detect, but you
 probably want to check wires at this point. If you have a logic analyzer, use it
 to verify that I2C transactions are being initiated on the bus.
 
+### Where can I get help?
+
+The hardest part is communicating with a device for the first time. The issue is
+usually unrelated to `ElixirCircuits.I2C`. If you expand your searches to
+include Python and C forums, you'll frequently find the answer.
+
+If that fails, try posting a question to the [Elixir
+Forum](https://elixirforum.com/). Tag the question with `Nerves` and it will
+have a good chance of getting to the write people. Feel free to do this even if
+you're not using Nerves.
+
+### Can I develop code that uses ElixirCircuits.I2C on my laptop?
+
+You'll need to fake out the hardware. Code to do this depends
+on what your hardware actually does, but here's one example:
+
+  * http://www.cultivatehq.com/posts/compiling-and-testing-elixir-nerves-on-your-host-machine/
+
+Please share other examples if you have them.
+
 ### Will it run on Arduino?
 
-No. I2c  only runs on Linux-based boards. If you're interested in controlling an Arduino from a computer that can run Elixir, check out [nerves_uart](https://hex.pm/packages/nerves_uart) for communicating via the Arduino's serial connection or [firmata](https://github.com/mobileoverlord/firmata) for communication using the Arduino's Firmata protocol.
-
-### Can I help maintain elixir_circuits?
-
-Yes! If your life has been improved by `i2c` and you want to give back,
-it would be great to have new energy put into this project. Please email me.
+No. This only runs on Linux-based boards. If you're interested in controlling an
+Arduino from a computer that can run Elixir, check out
+[nerves_uart](https://hex.pm/packages/nerves_uart) for communicating via the
+Arduino's serial connection or
+[firmata](https://github.com/mobileoverlord/firmata) for communication using the
+Arduino's Firmata protocol.
 
 # License
 
-This library draws much of its design and code from the Erlang/ALE project which
-is licensed under the Apache License, Version 2.0. As such, it is licensed
-similarly.
+Code from the library is licensed under the Apache License, Version 2.0.

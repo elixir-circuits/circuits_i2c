@@ -1,15 +1,16 @@
-defmodule I2C.MixProject do
+defmodule ElixirCircuits.I2C.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :i2c,
+      app: :elixir_circuits_i2c,
       version: "0.1.0",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
-      source_url: "https://github.com/ElixirCircuits/i2c",
+      source_url: "https://github.com/elixir-circuits/i2c",
       compilers: [:elixir_make | Mix.compilers()],
+      make_targets: ["all"],
       make_clean: ["clean"],
       make_env: make_env(),
       docs: [extras: ["README.md"]],
@@ -19,7 +20,24 @@ defmodule I2C.MixProject do
     ]
   end
 
-  def application, do: []
+  defp make_env() do
+    case System.get_env("ERL_EI_INCLUDE_DIR") do
+      nil ->
+        %{
+          "ERL_EI_INCLUDE_DIR" => "#{:code.root_dir()}/usr/include",
+          "ERL_EI_LIBDIR" => "#{:code.root_dir()}/usr/lib"
+        }
+
+      _ ->
+        %{}
+    end
+  end
+
+  def application do
+    [
+      extra_applications: [:logger]
+    ]
+  end
 
   defp description do
     "Elixir access to the hardware I2C interfaces."
@@ -37,7 +55,7 @@ defmodule I2C.MixProject do
         "Makefile"
       ],
       licenses: ["Apache-2.0"],
-      links: %{"GitHub" => "https://github.com/ElixirCircuits/i2c"}
+      links: %{"GitHub" => "https://github.com/elixir-circuits/i2c"}
     }
   end
 
@@ -64,17 +82,4 @@ defmodule I2C.MixProject do
   end
 
   defp format_c(_args), do: true
-
-  defp make_env() do
-    case System.get_env("ERL_EI_INCLUDE_DIR") do
-      nil ->
-        %{
-          "ERL_EI_INCLUDE_DIR" => "#{:code.root_dir()}/usr/include",
-          "ERL_EI_LIBDIR" => "#{:code.root_dir()}/usr/lib"
-        }
-
-      _ ->
-        %{}
-    end
-  end
 end

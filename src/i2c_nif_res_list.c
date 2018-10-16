@@ -24,8 +24,8 @@ void del_i2c_nif_res(I2cNifResList **head, I2cNifRes *del_res)
     I2cNifResList *prev_entry = NULL;
     I2cNifResList *curr_entry = *head;
 
-    while(curr_entry != NULL){
-        if (curr_entry->res == del_res){
+    while(curr_entry != NULL) {
+        if (curr_entry->res == del_res) {
             if (prev_entry == NULL)
                 *head = curr_entry->next;
             else
@@ -53,7 +53,7 @@ int is_i2c_nif_res(I2cNifResList *head, I2cNifRes *chk_res)
 {
     I2cNifResList *curr_entry = head;
 
-    while(curr_entry != NULL){
+    while(curr_entry != NULL) {
         if (curr_entry->res == chk_res)
             return 1;
 
@@ -68,7 +68,7 @@ int get_i2c_res_fd(I2cNifResList *head, const char *device)
 {
     I2cNifResList *curr_entry = head;
 
-    while(curr_entry != NULL){
+    while(curr_entry != NULL) {
         if (strcmp(curr_entry->res->device, device) == 0)
             return curr_entry->res->fd;
 

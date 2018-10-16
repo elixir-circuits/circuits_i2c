@@ -47,7 +47,8 @@ CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter
 
 SRC=$(wildcard src/*.c)
 
-.PHONY: all clean
+calling_from_make:
+	mix compile
 
 all: $(DEFAULT_TARGETS)
 
@@ -60,4 +61,6 @@ $(NIF): $(SRC)
 	$(CC) $(ERL_CFLAGS) $(CFLAGS) $(ERL_LDFLAGS) $(LDFLAGS) -o $@ $^
 
 clean:
-	rm $(NIF)
+	$(RM) $(NIF)
+
+.PHONY: all clean calling_from_make
