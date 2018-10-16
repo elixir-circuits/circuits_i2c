@@ -68,36 +68,36 @@ Here's a simple example of using it.
 ```Elixir
 # On the Raspberry Pi, the IO expander is connected to I2C bus 1 (i2c-1).
 # Its 7-bit address is 0x20. (see datasheet)
-iex> {:ok, fd} = ElixirCircuits.I2C.open("i2c-1")
-{:ok, 34}
+iex> {:ok, ref} = ElixirCircuits.I2C.open("i2c-1", 0x20)
+{:ok, #Reference<0.1994877202.537788433.199599>}
 
 # By default, all 8 GPIOs are set to inputs. Set the 4 high bits to outputs
 # so that we can toggle the LEDs. (Write 0x0f to register 0x00)
-iex> ElixirCircuits.I2C.write(fd, 0x20, <<0x00, 0x0f>>)
+iex> ElixirCircuits.I2C.write(ref, <<0x00, 0x0f>>)
 :ok
 
 # Turn on the LED attached to bit 4 on the expander. (Write 0x10 to register
 # 0x09)
-iex> ElixirCircuits.I2C.write(fd, 0x20, <<0x09, 0x10>>)
+iex> ElixirCircuits.I2C.write(ref, <<0x09, 0x10>>)
 :ok
 
 # Read all 11 of the expander's registers to see that the bit 0 switch is
 # the only one on and that the bit 4 LED is on.
-iex> ElixirCircuits.I2C.write(fd, 0x20, <<0>>)  # Set the next register to be read to 0
+iex> ElixirCircuits.I2C.write(ref, <<0>>)  # Set the next register to be read to 0
 :ok
 
-iex> ElixirCircuits.I2C.read(fd, 0x20, 11)
-{:ok, <<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>}
+iex> ElixirCircuits.I2C.read(ref, 11)
+<<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>
 
 # The operation of writing one or more bytes to select a register and
 # then reading is very common, so a shortcut is to just run the following:
-iex> ElixirCircuits.I2C.write_read(fd, 0x20, <<0>>, 11)
-{:ok, <<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>}
+iex> ElixirCircuits.I2C.write_read(ref, <<0>>, 11)
+<<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>
 
 # The 17 in register 9 says that bits 0 and bit 4 are high
 # We could have just read register 9.
 
-iex> ElixirCircuits.I2C.write_read(fd, 0x20, <<9>>, 1)
+iex> ElixirCircuits.I2C.write_read(ref, <<9>>, 1)
 {:ok, <<17>>}
 ```
 
