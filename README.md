@@ -120,7 +120,7 @@ include Python and C forums, you'll frequently find the answer.
 
 If that fails, try posting a question to the [Elixir
 Forum](https://elixirforum.com/). Tag the question with `Nerves` and it will
-have a good chance of getting to the write people. Feel free to do this even if
+have a good chance of getting to the right people. Feel free to do this even if
 you're not using Nerves.
 
 ### Can I develop code that uses ElixirCircuits.I2C on my laptop?
