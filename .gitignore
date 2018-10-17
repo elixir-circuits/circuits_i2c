@@ -20,7 +20,7 @@ erl_crash.dump
 *.ez
 
 # Ignore package tarball (built via "mix hex.build").
-i2c-*.tar
+elixir_circuits_i2c-*.tar
 
 # Ignore C object files and executables
 /priv
