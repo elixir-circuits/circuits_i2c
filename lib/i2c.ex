@@ -59,7 +59,7 @@ defmodule ElixirCircuits.I2C do
   Write the specified `data` to the device
   and then read the specified number of bytes.
   """
-  @spec write_read(reference, binary, integer) :: binary | {:error, term}
+  @spec write_read(reference, binary, integer) :: {:ok, binary} | {:error, term}
   def write_read(ref, write_data, read_count) do
     Nif.write_read(ref, write_data, read_count)
   end
@@ -68,7 +68,8 @@ defmodule ElixirCircuits.I2C do
   Write the specified `data` to the device at 'address'
   and then read the specified number of bytes.
   """
-  @spec write_read_device(reference, i2c_address, binary, integer) :: binary | {:error, term}
+  @spec write_read_device(reference, i2c_address, binary, integer) ::
+          {:ok, binary} | {:error, term}
   def write_read_device(ref, address, write_data, read_count) do
     Nif.write_read_device(ref, address, write_data, read_count)
   end
