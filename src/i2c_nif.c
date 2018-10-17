@@ -126,7 +126,7 @@ static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     int fd = open(devpath, O_RDWR);
     if (fd < 0)
         return enif_make_tuple2(env, priv->atom_error,
-                                    enif_make_atom(env, "access_denied"));
+                                enif_make_atom(env, "access_denied"));
 
     struct I2cNifRes *i2c_nif_res = enif_alloc_resource(priv->i2c_nif_res_type, sizeof(struct I2cNifRes));
     i2c_nif_res->fd = fd;
