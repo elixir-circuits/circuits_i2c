@@ -35,35 +35,18 @@
 
 #define I2C_BUFFER_MAX 8192
 
-// I2C NIF Resource.  Maps device name to file descriptor
-typedef struct{
-    char device[16];
+// I2C NIF Resource. 
+struct I2cNifRes {
     int fd;
-    unsigned addr;
-} I2cNifRes;
-
-
-// Linked list of references to I2C NIF Resources
-typedef struct {
-    I2cNifRes *res;
-    void *next;
-} I2cNifResList;
+    unsigned int addr;
+};
 
 
 // I2C NIF Private data
-typedef struct {
+struct I2cNifPriv {
     ErlNifResourceType *i2c_nif_res_type;
-    I2cNifResList *i2c_nif_res_list;
     ERL_NIF_TERM atom_ok;
     ERL_NIF_TERM atom_error;
-} I2cNifPriv;
-
-
-// i2c_nif_res_list.c
-
-void del_i2c_nif_res(I2cNifResList **head, I2cNifRes *del_res);
-void add_i2c_nif_res(I2cNifResList **head, I2cNifRes *add_res);
-int is_i2c_nif_res(I2cNifResList *head, I2cNifRes *chk_res);
-int get_i2c_res_fd(I2cNifResList *head, const char *device);
+};
 
 #endif // I2C_NIF_H
