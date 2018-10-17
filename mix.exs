@@ -20,24 +20,7 @@ defmodule ElixirCircuits.I2C.MixProject do
     ]
   end
 
-  defp make_env() do
-    case System.get_env("ERL_EI_INCLUDE_DIR") do
-      nil ->
-        %{
-          "ERL_EI_INCLUDE_DIR" => "#{:code.root_dir()}/usr/include",
-          "ERL_EI_LIBDIR" => "#{:code.root_dir()}/usr/lib"
-        }
-
-      _ ->
-        %{}
-    end
-  end
-
-  def application do
-    [
-      extra_applications: [:logger]
-    ]
-  end
+  def application, do: []
 
   defp description do
     "Elixir access to the hardware I2C interfaces."
@@ -82,4 +65,17 @@ defmodule ElixirCircuits.I2C.MixProject do
   end
 
   defp format_c(_args), do: true
+
+  defp make_env() do
+    case System.get_env("ERL_EI_INCLUDE_DIR") do
+      nil ->
+        %{
+          "ERL_EI_INCLUDE_DIR" => "#{:code.root_dir()}/usr/include",
+          "ERL_EI_LIBDIR" => "#{:code.root_dir()}/usr/lib"
+        }
+
+      _ ->
+        %{}
+    end
+  end
 end
