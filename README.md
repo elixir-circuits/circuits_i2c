@@ -1,30 +1,30 @@
-# ElixirCircuits.I2C
+# Elixir Circuits - I2C
 
-[![CircleCI](https://circleci.com/gh/elixir-circuits/i2c.svg?style=svg)](https://circleci.com/gh/elixir-circuits/i2c)
-[![Hex version](https://img.shields.io/hexpm/v/elixir_circuits_i2c.svg "Hex version")](https://hex.pm/packages/elixir_circuits_i2c)
+[![CircleCI](https://circleci.com/gh/elixir-circuits/circuits_i2c.svg?style=svg)](https://circleci.com/gh/elixir-circuits/circuits_i2c)
+[![Hex version](https://img.shields.io/hexpm/v/circuits_i2c.svg "Hex version")](https://hex.pm/packages/circuits_i2c)
 
-`ElixirCircuits.I2C` provides high level abstractions for interfacing to I2C
-buses on Linux platforms. Internally, it uses the [Linux device
+`Circuits.I2C` provides high level abstractions for interfacing to I2C buses on
+Linux platforms. Internally, it uses the [Linux device
 interface](https://elixir.bootlin.com/linux/latest/source/Documentation/i2c/dev-interface)
 so that it does not require board-dependent code.
 
-# Getting started
+## Getting started
 
 If you're using Nerves or compiling on a Raspberry Pi or other device with I2C
-support, then add `elixir_circuits_i2c` like any other Elixir library:
+support, then add `circuits_i2c` like any other Elixir library:
 
 ```elixir
 def deps do
-  [{:elixir_circuits_i2c, "~> 0.1"}]
+  [{:circuits_i2c, "~> 0.1"}]
 end
 ```
 
-`ElixirCircuits.I2C` doesn't load device drivers, so you'll need to load any
-necessary ones beforehand.  On the Raspberry Pi, the [Adafruit Raspberry Pi I2C
+`Circuits.I2C` doesn't load device drivers, so you'll need to load any necessary
+ones beforehand.  On the Raspberry Pi, the [Adafruit Raspberry Pi I2C
 instructions](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c)
 may be helpful.
 
-# Examples
+## Examples
 
 The following examples were tested on a Raspberry Pi that was connected to an
 [Erlang Embedded Demo Board](http://solderpad.com/omerk/erlhwdemo/). There's
@@ -33,8 +33,8 @@ work similarly on other embedded Linux platforms.
 
 ## I2C
 
-An [Inter-Integrated Circuit](https://en.wikipedia.org/wiki/I%C2%B2C) (I2C)
-bus supports addressing hardware components and bidirectional use of the data line.
+An [Inter-Integrated Circuit](https://en.wikipedia.org/wiki/I%C2%B2C) (I2C) bus
+supports addressing hardware components and bidirectional use of the data line.
 
 The following shows a bus IO expander connected via I2C to the processor.
 
@@ -47,36 +47,36 @@ Here's a simple example of using it.
 ```elixir
 # On the Raspberry Pi, the IO expander is connected to I2C bus 1 (i2c-1).
 # Its 7-bit address is 0x20. (see datasheet)
-iex> {:ok, ref} = ElixirCircuits.I2C.open("i2c-1", 0x20)
+iex> {:ok, ref} = Circuits.I2C.open("i2c-1", 0x20)
 {:ok, #Reference<0.1994877202.537788433.199599>}
 
 # By default, all 8 GPIOs are set to inputs. Set the 4 high bits to outputs
 # so that we can toggle the LEDs. (Write 0x0f to register 0x00)
-iex> ElixirCircuits.I2C.write(ref, <<0x00, 0x0f>>)
+iex> Circuits.I2C.write(ref, <<0x00, 0x0f>>)
 :ok
 
 # Turn on the LED attached to bit 4 on the expander. (Write 0x10 to register
 # 0x09)
-iex> ElixirCircuits.I2C.write(ref, <<0x09, 0x10>>)
+iex> Circuits.I2C.write(ref, <<0x09, 0x10>>)
 :ok
 
 # Read all 11 of the expander's registers to see that the bit 0 switch is
 # the only one on and that the bit 4 LED is on.
-iex> ElixirCircuits.I2C.write(ref, <<0>>)  # Set the next register to be read to 0
+iex> Circuits.I2C.write(ref, <<0>>)  # Set the next register to be read to 0
 :ok
 
-iex> ElixirCircuits.I2C.read(ref, 11)
+iex> Circuits.I2C.read(ref, 11)
 <<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>
 
 # The operation of writing one or more bytes to select a register and
 # then reading is very common, so a shortcut is to just run the following:
-iex> ElixirCircuits.I2C.write_read(ref, <<0>>, 11)
+iex> Circuits.I2C.write_read(ref, <<0>>, 11)
 <<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>
 
 # The 17 in register 9 says that bits 0 and bit 4 are high
 # We could have just read register 9.
 
-iex> ElixirCircuits.I2C.write_read(ref, <<9>>, 1)
+iex> Circuits.I2C.write_read(ref, <<9>>, 1)
 {:ok, <<17>>}
 ```
 
@@ -84,11 +84,11 @@ iex> ElixirCircuits.I2C.write_read(ref, <<9>>, 1)
 
 ### How do I debug?
 
-The most common issue is communicating with an I2C for the first time.
-For I2C, first check that an I2C bus is available:
+The most common issue is communicating with an I2C for the first time.  For I2C,
+first check that an I2C bus is available:
 
 ```elixir
-iex> ElixirCircuits.I2C.device_names
+iex> Circuits.I2C.device_names
 ["i2c-1"]
 ```
 
@@ -103,7 +103,7 @@ kernel and that the device tree configures it.
 Once an I2C bus is available, try detecting devices on it:
 
 ```elixir
-iex> ElixirCircuits.I2C.detect_devices("i2c-1")
+iex> Circuits.I2C.detect_devices("i2c-1")
 [4]
 ```
 
@@ -115,20 +115,20 @@ to verify that I2C transactions are being initiated on the bus.
 ### Where can I get help?
 
 The hardest part is communicating with a device for the first time. The issue is
-usually unrelated to `ElixirCircuits.I2C`. If you expand your searches to
-include Python and C forums, you'll frequently find the answer.
+usually unrelated to `Circuits.I2C`. If you expand your searches to include
+Python and C forums, you'll frequently find the answer.
 
 If that fails, try posting a question to the [Elixir
 Forum](https://elixirforum.com/). Tag the question with `Nerves` and it will
 have a good chance of getting to the right people. Feel free to do this even if
 you're not using Nerves.
 
-### Can I develop code that uses ElixirCircuits.I2C on my laptop?
+### Can I develop code that uses Circuits.I2C on my laptop?
 
-You'll need to fake out the hardware. Code to do this depends
-on what your hardware actually does, but here's one example:
+You'll need to fake out the hardware. Code to do this depends on what your
+hardware actually does, but here's one example:
 
-  * http://www.cultivatehq.com/posts/compiling-and-testing-elixir-nerves-on-your-host-machine/
+* http://www.cultivatehq.com/posts/compiling-and-testing-elixir-nerves-on-your-host-machine/
 
 Please share other examples if you have them.
 
@@ -141,6 +141,6 @@ Arduino's serial connection or
 [firmata](https://github.com/mobileoverlord/firmata) for communication using the
 Arduino's Firmata protocol.
 
-# License
+## License
 
 Code from the library is licensed under the Apache License, Version 2.0.
