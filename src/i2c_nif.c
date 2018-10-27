@@ -323,4 +323,4 @@ static ErlNifFunc nif_funcs[] =
     {"close", 1, i2c_close, 0}
 };
 
-ERL_NIF_INIT(Elixir.ElixirCircuits.I2C.Nif, nif_funcs, i2c_load, NULL, NULL, i2c_unload)
+ERL_NIF_INIT(Elixir.Circuits.I2C.Nif, nif_funcs, i2c_load, NULL, NULL, i2c_unload)

@@ -1,10 +1,10 @@
-defmodule ElixirCircuits.I2C do
+defmodule Circuits.I2C do
   @moduledoc """
   `i2c` provides high level abstractions for interfacing to I2C
   buses on Linux platforms. Internally, it uses the Linux
   sysclass interface so that it does not require platform-dependent code.
   """
-  alias ElixirCircuits.I2C.Nif
+  alias Circuits.I2C.Nif
 
   # Public API
 
@@ -89,7 +89,7 @@ defmodule ElixirCircuits.I2C do
   look in the advanced options.
 
   ```
-  iex> ElxirCircuits.I2C.device_names
+  iex> Circuits.I2C.device_names
   ["i2c-1"]
   ```
   """
@@ -108,7 +108,7 @@ defmodule ElixirCircuits.I2C do
   with other code.
 
   ```
-  iex> ElxirCircuits.I2C.detect_devices("i2c-1")
+  iex> Circuits.I2C.detect_devices("i2c-1")
   [4]
   ```
   The return value is a list of device addresses that were detected on the
@@ -124,8 +124,8 @@ defmodule ElixirCircuits.I2C do
     Enum.reject(0..127, &(read_device(ref, &1, 1) == {:error, :read_failed}))
   end
 
-  def detect_devices(devname) when is_binary(devname) do
-    case open(devname, 0) do
+  def detect_devices(dev_name) when is_binary(dev_name) do
+    case open(dev_name, 0) do
       {:ok, ref} ->
         devices = detect_devices(ref)
         close(ref)

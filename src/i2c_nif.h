@@ -21,7 +21,7 @@
 
 #ifdef DEBUG
 #define log_location stderr
-//#define LOG_PATH "/tmp/elixir_circuits_i2c.log"
+//#define LOG_PATH "/tmp/circuits_i2c.log"
 #define debug(...) do { enif_fprintf(log_location, __VA_ARGS__); enif_fprintf(log_location, "\r\n"); fflush(log_location); } while(0)
 #define error(...) do { debug(__VA_ARGS__); } while (0)
 #define start_timing() ErlNifTime __start = enif_monotonic_time(ERL_NIF_USEC)
@@ -35,7 +35,7 @@
 
 #define I2C_BUFFER_MAX 8192
 
-// I2C NIF Resource. 
+// I2C NIF Resource.
 struct I2cNifRes {
     int fd;
     unsigned int addr;

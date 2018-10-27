@@ -1,14 +1,14 @@
-defmodule ElixirCircuits.I2C.MixProject do
+defmodule Circuits.I2C.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :elixir_circuits_i2c,
+      app: :circuits_i2c,
       version: "0.1.0",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
-      source_url: "https://github.com/elixir-circuits/i2c",
+      source_url: "https://github.com/elixir-circuits/circuits_i2c",
       compilers: [:elixir_make | Mix.compilers()],
       make_targets: ["all"],
       make_clean: ["clean"],
@@ -38,7 +38,7 @@ defmodule ElixirCircuits.I2C.MixProject do
         "Makefile"
       ],
       licenses: ["Apache-2.0"],
-      links: %{"GitHub" => "https://github.com/elixir-circuits/i2c"}
+      links: %{"GitHub" => "https://github.com/elixir-circuits/circuits_i2c"}
     }
   end
 
