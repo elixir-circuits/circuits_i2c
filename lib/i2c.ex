@@ -121,7 +121,7 @@ defmodule Circuits.I2C do
   """
   @spec detect_devices(reference() | binary) :: [integer] | {:error, term}
   def detect_devices(ref) when is_reference(ref) do
-    Enum.reject(0..127, &(read_device(ref, &1, 1) == {:error, :read_failed}))
+    Enum.filter(0..127, &device_present?(ref, &1))
   end
 
   def detect_devices(dev_name) when is_binary(dev_name) do
@@ -133,6 +133,13 @@ defmodule Circuits.I2C do
 
       error ->
         error
+    end
+  end
+
+  defp device_present?(i2c, address) do
+    case read_device(i2c, address, 1) do
+      {:ok, _} -> true
+      _ -> false
     end
   end
 end
