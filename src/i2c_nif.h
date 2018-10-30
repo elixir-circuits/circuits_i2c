@@ -1,21 +1,10 @@
 #ifndef I2C_NIF_H
 #define I2C_NIF_H
 
-
-#include "linux/i2c-dev.h"
-#include "erl_nif.h"
-
+#include <erl_nif.h>
 #include <err.h>
-#include <stdbool.h>
-#include <stdio.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include <stdio.h>
 
 //#define DEBUG
 
@@ -35,18 +24,42 @@
 
 #define I2C_BUFFER_MAX 8192
 
-// I2C NIF Resource.
-struct I2cNifRes {
-    int fd;
-    unsigned int addr;
-};
+/**
+ * Open an I2C device
+ *
+ * @param device the name of the I2C device
+ *
+ * @return <0 on error or a handle on success
+ */
+int hal_i2c_open(const char *device);
 
+/**
+ * Free resources associated with an I2C device
+ */
+void hal_i2c_close(int fd);
 
-// I2C NIF Private data
-struct I2cNifPriv {
-    ErlNifResourceType *i2c_nif_res_type;
-    ERL_NIF_TERM atom_ok;
-    ERL_NIF_TERM atom_error;
-};
+/**
+ * I2C combined write/read operation
+ *
+ * This function can be used to individually read or write
+ * bytes across the bus. Additionally, a write and read
+ * operation can be combined into one transaction. This is
+ * useful for communicating with register-based devices that
+ * support setting the current register via the first one or
+ * two bytes written.
+ *
+ * @param   fd            The I2C device file descriptor
+ * @param   addr          The device address
+ * @param   to_write      Optional write buffer
+ * @param   to_write_len  Write buffer length
+ * @param   to_read       Optional read buffer
+ * @param   to_read_len   Read buffer length
+ *
+ * @return  <0 for failure
+ */
+int hal_i2c_transfer(int fd,
+                     unsigned int addr,
+                     const uint8_t *to_write, size_t to_write_len,
+                     uint8_t *to_read, size_t to_read_len);
 
 #endif // I2C_NIF_H

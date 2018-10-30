@@ -17,59 +17,22 @@
  */
 
 #include "i2c_nif.h"
+#include <errno.h>
+#include <string.h>
 
+// I2C NIF Resource.
+struct I2cNifRes {
+    int fd;
+    unsigned int addr;
+};
 
-/**
- * @brief   I2C combined write/read operation
- *
- * This function can be used to individually read or write
- * bytes across the bus. Additionally, a write and read
- * operation can be combined into one transaction. This is
- * useful for communicating with register-based devices that
- * support setting the current register via the first one or
- * two bytes written.
- *
- * @param   fd            The I2C device file descriptor
- * @param   addr          The device address
- * @param   to_write      Optional write buffer
- * @param   to_write_len  Write buffer length
- * @param   to_read       Optional read buffer
- * @param   to_read_len   Read buffer length
- *
- * @return  1 for success, 0 for failure
- */
-static int i2c_transfer(int fd,
-                        unsigned int addr,
-                        const uint8_t *to_write, size_t to_write_len,
-                        uint8_t *to_read, size_t to_read_len)
-{
-    struct i2c_rdwr_ioctl_data data;
-    struct i2c_msg msgs[2];
-
-    msgs[0].addr = addr;
-    msgs[0].flags = 0;
-    msgs[0].len = to_write_len;
-    msgs[0].buf = (uint8_t *) to_write;
-
-    msgs[1].addr = addr;
-    msgs[1].flags = I2C_M_RD;
-    msgs[1].len = to_read_len;
-    msgs[1].buf = (uint8_t *) to_read;
-
-    if (to_write_len != 0)
-        data.msgs = &msgs[0];
-    else
-        data.msgs = &msgs[1];
-
-    data.nmsgs = (to_write_len != 0 && to_read_len != 0) ? 2 : 1;
-
-    int rc = ioctl(fd, I2C_RDWR, &data);
-    if (rc < 0)
-        return 0;
-    else
-        return 1;
-}
-
+// I2C NIF Private data
+struct I2cNifPriv {
+    ErlNifResourceType *i2c_nif_res_type;
+    ERL_NIF_TERM atom_ok;
+    ERL_NIF_TERM atom_error;
+    ERL_NIF_TERM atom_nak;
+};
 
 static int i2c_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM info)
 {
@@ -94,11 +57,11 @@ static int i2c_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM info)
 
     priv->atom_ok = enif_make_atom(env, "ok");
     priv->atom_error = enif_make_atom(env, "error");
+    priv->atom_nak = enif_make_atom(env, "i2c_nak");
 
     *priv_data = priv;
     return 0;
 }
-
 
 static void i2c_unload(ErlNifEnv *env, void *priv_data)
 {
@@ -108,12 +71,32 @@ static void i2c_unload(ErlNifEnv *env, void *priv_data)
     enif_free(priv);
 }
 
+static ERL_NIF_TERM enif_make_errno_error(ErlNifEnv *env)
+{
+    struct I2cNifPriv *priv = enif_priv_data(env);
+    ERL_NIF_TERM reason;
+    switch (errno) {
+#ifdef EREMOTEIO
+    case EREMOTEIO:
+        // Remote I/O errors are I2C naks
+        reason = priv->atom_nak;
+        break;
+#endif
+    default:
+        // strerror isn't usually that helpful, so if these
+        // errors happen, please report or update this code
+        // to provide a better reason.
+        reason = enif_make_atom(env, strerror(errno));
+        break;
+    }
+
+    return enif_make_tuple2(env, priv->atom_error, reason);
+}
 
 static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
     struct I2cNifPriv *priv = enif_priv_data(env);
     char device[16];
-    char devpath[64]="/dev/";
     unsigned int addr;
 
     if (!enif_get_string(env, argv[0], device, sizeof(device), ERL_NIF_LATIN1))
@@ -122,11 +105,9 @@ static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     if (!enif_get_uint(env, argv[1], &addr))
         return enif_make_badarg(env);
 
-    strncat(devpath, device, sizeof(device));
-    int fd = open(devpath, O_RDWR);
+    int fd = hal_i2c_open(device);
     if (fd < 0)
-        return enif_make_tuple2(env, priv->atom_error,
-                                enif_make_atom(env, "access_denied"));
+        return enif_make_errno_error(env);
 
     struct I2cNifRes *i2c_nif_res = enif_alloc_resource(priv->i2c_nif_res_type, sizeof(struct I2cNifRes));
     i2c_nif_res->fd = fd;
@@ -138,7 +119,6 @@ static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
 
     return enif_make_tuple2(env, priv->atom_ok, res_term);
 }
-
 
 static ERL_NIF_TERM i2c_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
@@ -154,15 +134,14 @@ static ERL_NIF_TERM i2c_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     if (!enif_get_ulong(env, argv[1], &read_len))
         return enif_make_badarg(env);
 
-    if (i2c_transfer(res->fd, res->addr, 0, 0, read_data, read_len)) {
+    if (hal_i2c_transfer(res->fd, res->addr, 0, 0, read_data, read_len)) {
         bin_read.data = read_data;
         bin_read.size = read_len;
         return enif_make_tuple2(env, priv->atom_ok, enif_make_binary(env, &bin_read));
     }
     else
-        return enif_make_tuple2(env, priv->atom_error, enif_make_atom(env, "read_failed"));
+        return enif_make_errno_error(env);
 }
-
 
 static ERL_NIF_TERM i2c_read_device(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
@@ -182,15 +161,14 @@ static ERL_NIF_TERM i2c_read_device(ErlNifEnv *env, int argc, const ERL_NIF_TERM
     if (!enif_get_ulong(env, argv[2], &read_len))
         return enif_make_badarg(env);
 
-    if (i2c_transfer(res->fd, addr, 0, 0, read_data, read_len)) {
+    if (hal_i2c_transfer(res->fd, addr, 0, 0, read_data, read_len) >= 0) {
         bin_read.data = read_data;
         bin_read.size = read_len;
         return enif_make_tuple2(env, priv->atom_ok, enif_make_binary(env, &bin_read));
     }
     else
-        return enif_make_tuple2(env, priv->atom_error, enif_make_atom(env, "read_failed"));
+        return enif_make_errno_error(env);
 }
-
 
 static ERL_NIF_TERM i2c_write(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
@@ -204,13 +182,12 @@ static ERL_NIF_TERM i2c_write(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     if (!enif_inspect_binary(env, argv[1], &bin_write))
         return enif_make_badarg(env);
 
-    if (i2c_transfer(res->fd, res->addr, bin_write.data, bin_write.size, 0, 0)) {
+    if (hal_i2c_transfer(res->fd, res->addr, bin_write.data, bin_write.size, 0, 0)) {
         return priv->atom_ok;
     }
     else
-        return enif_make_tuple2(env, priv->atom_error, enif_make_atom(env, "write_failed"));
+        return enif_make_errno_error(env);
 }
-
 
 static ERL_NIF_TERM i2c_write_device(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
@@ -228,11 +205,10 @@ static ERL_NIF_TERM i2c_write_device(ErlNifEnv *env, int argc, const ERL_NIF_TER
     if (!enif_inspect_binary(env, argv[2], &bin_write))
         return enif_make_badarg(env);
 
-    if (i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, 0, 0)) {
+    if (hal_i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, 0, 0) >= 0)
         return priv->atom_ok;
-    }
     else
-        return enif_make_tuple2(env, priv->atom_error, enif_make_atom(env, "write_failed"));
+        return enif_make_errno_error(env);
 }
 
 
@@ -254,15 +230,14 @@ static ERL_NIF_TERM i2c_write_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM 
     if (!enif_get_ulong(env, argv[2], &read_len))
         return enif_make_badarg(env);
 
-    if (i2c_transfer(res->fd, res->addr, bin_write.data, bin_write.size, read_data, read_len)) {
+    if (hal_i2c_transfer(res->fd, res->addr, bin_write.data, bin_write.size, read_data, read_len)) {
         bin_read.data = read_data;
         bin_read.size = read_len;
         return enif_make_tuple2(env, priv->atom_ok, enif_make_binary(env, &bin_read));
     }
     else
-        return enif_make_tuple2(env, priv->atom_error, enif_make_atom(env, "write_read_failed"));
+        return enif_make_errno_error(env);
 }
-
 
 static ERL_NIF_TERM i2c_write_read_device(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
@@ -286,15 +261,14 @@ static ERL_NIF_TERM i2c_write_read_device(ErlNifEnv *env, int argc, const ERL_NI
     if (!enif_get_ulong(env, argv[3], &read_len))
         return enif_make_badarg(env);
 
-    if (i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, read_data, read_len)) {
+    if (hal_i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, read_data, read_len) >= 0) {
         bin_read.data = read_data;
         bin_read.size = read_len;
         return enif_make_tuple2(env, priv->atom_ok, enif_make_binary(env, &bin_read));
     }
     else
-        return enif_make_tuple2(env, priv->atom_error, enif_make_atom(env, "write_read_failed"));
+        return enif_make_errno_error(env);
 }
-
 
 static ERL_NIF_TERM i2c_close(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
@@ -304,12 +278,13 @@ static ERL_NIF_TERM i2c_close(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     if (!enif_get_resource(env, argv[0], priv->i2c_nif_res_type, (void **)&res))
         return enif_make_badarg(env);
 
-    // Invalidate the file descriptor
-    res->fd = -1;
+    if (res->fd >= 0) {
+        hal_i2c_close(res->fd);
+        res->fd = -1;
+    }
 
     return priv->atom_ok;
 }
-
 
 static ErlNifFunc nif_funcs[] =
 {
