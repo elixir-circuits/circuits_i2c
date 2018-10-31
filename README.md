@@ -3,10 +3,10 @@
 [![CircleCI](https://circleci.com/gh/elixir-circuits/circuits_i2c.svg?style=svg)](https://circleci.com/gh/elixir-circuits/circuits_i2c)
 [![Hex version](https://img.shields.io/hexpm/v/circuits_i2c.svg "Hex version")](https://hex.pm/packages/circuits_i2c)
 
-`Circuits.I2C` provides high level abstractions for interfacing to I2C buses on
-Linux platforms. Internally, it uses the [Linux device
-interface](https://elixir.bootlin.com/linux/latest/source/Documentation/i2c/dev-interface)
-so that it does not require board-dependent code.
+`Circuits.I2C` lets you communicate with hardware devices using the I2C
+protocol.
+
+If you're coming from Elixir/ALE, check out our [porting guide](PORTING.md).
 
 ## Getting started
 
@@ -23,6 +23,10 @@ end
 ones beforehand.  On the Raspberry Pi, the [Adafruit Raspberry Pi I2C
 instructions](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c)
 may be helpful.
+
+Internally, it uses the [Linux "i2cdev"
+interface](https://elixir.bootlin.com/linux/latest/source/Documentation/i2c/dev-interface)
+so that it does not require board-dependent code.
 
 ## Examples
 
