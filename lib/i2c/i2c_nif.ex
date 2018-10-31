@@ -3,7 +3,7 @@ defmodule Circuits.I2C.Nif do
   @compile {:autoload, false}
 
   @doc """
-  Elixir interface to I2C Natively Implemented Funtions (NIFs)
+  Elixir interface to I2C Natively Implemented Functions (NIFs)
   """
 
   def load_nif() do
@@ -11,31 +11,19 @@ defmodule Circuits.I2C.Nif do
     :erlang.load_nif(to_charlist(nif_binary), 0)
   end
 
-  def open(_device, _address) do
+  def open(_device) do
     :erlang.nif_error(:nif_not_loaded)
   end
 
-  def read(_ref, _count) do
+  def read(_ref, _address, _count) do
     :erlang.nif_error(:nif_not_loaded)
   end
 
-  def read_device(_ref, _address, _count) do
+  def write(_ref, _address, _data) do
     :erlang.nif_error(:nif_not_loaded)
   end
 
-  def write(_ref, _data) do
-    :erlang.nif_error(:nif_not_loaded)
-  end
-
-  def write_device(_ref, _address, _data) do
-    :erlang.nif_error(:nif_not_loaded)
-  end
-
-  def write_read(_ref, _write_data, _read_count) do
-    :erlang.nif_error(:nif_not_loaded)
-  end
-
-  def write_read_device(_ref, _address, _write_data, _read_count) do
+  def write_read(_ref, _address, _write_data, _read_count) do
     :erlang.nif_error(:nif_not_loaded)
   end
 

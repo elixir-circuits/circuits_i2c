@@ -1,8 +1,8 @@
 defmodule Circuits.I2C do
   @moduledoc """
-  `i2c` provides high level abstractions for interfacing to I2C
-  buses on Linux platforms. Internally, it uses the Linux
-  sysclass interface so that it does not require platform-dependent code.
+  `i2c` provides high level abstractions for interfacing to I2C buses on Linux
+  platforms. Internally, it uses the Linux sysclass interface so that it does
+  not require platform-dependent code.
   """
   alias Circuits.I2C.Nif
 
@@ -11,67 +11,58 @@ defmodule Circuits.I2C do
   @type i2c_address :: 0..127
 
   @doc """
-  Open the I2C device (Example:"i2c-1")
-  Address is the default I2C device slave address
-  On success, returns a reference to the I2C bus resource.
-  Use the reference in subsequent calls to read/write I2C device
-  """
-  @spec open(binary, i2c_address) :: {:ok, reference} | {:error, term}
-  def open(device, address) do
-    Nif.open(to_charlist(device), address)
-  end
+  Open an I2C device
 
-  @doc """
-  Initiate a read transaction to the device
-  and specified number of bytes to read
+  I2C device names depend on the platform. Each I2C device handles access to
+  one I2C bus. Names are of the form "i2c-n" where the "n" is the bus number.
+  The correct bus number can be found in the documentation for the device or on
+  a schematic. One other option is to call `Circuits.I2C.device_names/1` to
+  list them for you.
+
+  On success, this returns a reference to the I2C bus resource.  Use the
+  reference in subsequent calls to read/write I2C device
   """
-  @spec read(reference, integer) :: {:ok, binary} | {:error, term}
-  def read(ref, count) do
-    Nif.read(ref, count)
+  @spec open(binary) :: {:ok, reference} | {:error, term}
+  def open(device) do
+    Nif.open(to_charlist(device))
   end
 
   @doc """
   Initiate a read transaction to the device at the specified `address`
-  and specified number of bytes to read
+
+  The address should be the "7-bit" address for the device. Some devices
+  specify an "8-bit" address in their documentation. You can tell if you have
+  an "8-bit" address if it's greater than 127 (0x7f) or if the documentation
+  talks about different read and write addresses. If you have an 8-bit address,
+  divide it by 2.
   """
-  @spec read_device(reference, i2c_address, integer) :: {:ok, binary} | {:error, term}
-  def read_device(ref, address, count) do
-    Nif.read_device(ref, address, count)
+  @spec read(reference, i2c_address, pos_integer) :: {:ok, binary} | {:error, term}
+  def read(ref, address, count) do
+    Nif.read(ref, address, count)
   end
 
   @doc """
-  Write the specified `data` to the device
+  Write `data` to the I2C device at `address`.
   """
-  @spec write(reference, binary) :: :ok | {:error, term}
-  def write(ref, data) do
-    Nif.write(ref, data)
+  @spec write(reference, i2c_address, binary) :: :ok | {:error, term}
+  def write(ref, address, data) do
+    Nif.write(ref, address, data)
   end
 
   @doc """
-  Write the specified `data` to the device at `address`.
-  """
-  @spec write_device(reference, i2c_address, binary) :: :ok | {:error, term}
-  def write_device(ref, address, data) do
-    Nif.write_device(ref, address, data)
-  end
+  Write `data` to an I2C device and then immediately issue a read.
 
-  @doc """
-  Write the specified `data` to the device
-  and then read the specified number of bytes.
+  This function is useful for devices that want you to write the "register"
+  location to them first and then issue a read to get its contents. Many
+  devices operate this way and this function will issue the commands
+  back-to-back on the I2C bus. Some I2C devices actually require that the read
+  immediately follows the write. If the target supports this, the I2C
+  transaction will be issued that way. On the Raspberry Pi, this can be enabled
+  globally with `File.write!("/sys/module/i2c_bcm2708/parameters/combined", "1")`
   """
-  @spec write_read(reference, binary, integer) :: {:ok, binary} | {:error, term}
-  def write_read(ref, write_data, read_count) do
-    Nif.write_read(ref, write_data, read_count)
-  end
-
-  @doc """
-  Write the specified `data` to the device at 'address'
-  and then read the specified number of bytes.
-  """
-  @spec write_read_device(reference, i2c_address, binary, integer) ::
-          {:ok, binary} | {:error, term}
-  def write_read_device(ref, address, write_data, read_count) do
-    Nif.write_read_device(ref, address, write_data, read_count)
+  @spec write_read(reference, i2c_address, binary, pos_integer) :: {:ok, binary} | {:error, term}
+  def write_read(ref, address, write_data, read_count) do
+    Nif.write_read(ref, address, write_data, read_count)
   end
 
   @doc """
@@ -88,7 +79,7 @@ defmodule Circuits.I2C do
   kernel's device tree is not configured. On Raspbian, run `raspi-config` and
   look in the advanced options.
 
-  ```
+  ```elixir
   iex> Circuits.I2C.device_names
   ["i2c-1"]
   ```
@@ -100,32 +91,33 @@ defmodule Circuits.I2C do
   end
 
   @doc """
-  Scan the I2C bus for devices by performing a read at each device address
-  and returning a list of device addresses that respond.
+  Scan the I2C bus for devices by performing a read at each device address and
+  returning a list of device addresses that respond.
 
   WARNING: This is intended to be a debugging aid. Reading bytes from devices
   can advance internal state machines and might cause them to get out of sync
   with other code.
 
-  ```
+  ```elixir
   iex> Circuits.I2C.detect_devices("i2c-1")
   [4]
   ```
+
   The return value is a list of device addresses that were detected on the
   specified I2C bus. If you get back `'Hh'` or other letters, then IEx
   converted the list to an Erlang string. Run `i v()` to get information about
   the return value and look at the raw string representation for addresses.
 
-  If you already have a reference to an open device, then you may
-  pass its `reference` to `detect_devices/1` instead.
+  If you already have a reference to an open device, then you may pass its
+  `reference` to `detect_devices/1` instead.
   """
-  @spec detect_devices(reference() | binary) :: [integer] | {:error, term}
+  @spec detect_devices(reference() | binary) :: [i2c_address] | {:error, term}
   def detect_devices(ref) when is_reference(ref) do
     Enum.filter(0..127, &device_present?(ref, &1))
   end
 
   def detect_devices(dev_name) when is_binary(dev_name) do
-    case open(dev_name, 0) do
+    case open(dev_name) do
       {:ok, ref} ->
         devices = detect_devices(ref)
         close(ref)
@@ -137,7 +129,7 @@ defmodule Circuits.I2C do
   end
 
   defp device_present?(i2c, address) do
-    case read_device(i2c, address, 1) do
+    case read(i2c, address, 1) do
       {:ok, _} -> true
       _ -> false
     end
