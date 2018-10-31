@@ -34,6 +34,7 @@ defmodule Circuits.I2C.MixProject do
         "src/linux/i2c-dev.h",
         "mix.exs",
         "README.md",
+        "PORTING.md",
         "LICENSE",
         "Makefile"
       ],
