@@ -8,6 +8,15 @@ defmodule Circuits.I2C do
 
   # Public API
 
+  @typedoc """
+  I2C device address
+
+  This is a "7-bit" address for the device. Some devices
+  specify an "8-bit" address in their documentation. You can tell if you have
+  an "8-bit" address if it's greater than 127 (0x7f) or if the documentation
+  talks about different read and write addresses. If you have an 8-bit address,
+  divide it by 2.
+  """
   @type i2c_address :: 0..127
 
   @doc """
@@ -30,23 +39,51 @@ defmodule Circuits.I2C do
   @doc """
   Initiate a read transaction to the device at the specified `address`
 
-  The address should be the "7-bit" address for the device. Some devices
-  specify an "8-bit" address in their documentation. You can tell if you have
-  an "8-bit" address if it's greater than 127 (0x7f) or if the documentation
-  talks about different read and write addresses. If you have an 8-bit address,
-  divide it by 2.
+  Options:
+
+  * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec read(reference, i2c_address, pos_integer) :: {:ok, binary} | {:error, term}
-  def read(ref, address, count) do
-    Nif.read(ref, address, count)
+  @spec read(reference, i2c_address, pos_integer, keyword) :: {:ok, binary} | {:error, term}
+  def read(ref, address, count, opts \\ []) do
+    retries = Keyword.get(opts, :retries, 0)
+
+    retry(fn -> Nif.read(ref, address, count) end, retries)
+  end
+
+  @doc """
+  Initiate a read transaction and raise on error
+  """
+  @spec read!(reference, i2c_address, pos_integer, keyword) :: binary
+  def read!(ref, address, count, opts \\ []) do
+    retries = Keyword.get(opts, :retries, 0)
+
+    retry!(fn -> Nif.read(ref, address, count) end, retries)
   end
 
   @doc """
   Write `data` to the I2C device at `address`.
+
+  Options:
+
+  * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write(reference, i2c_address, binary) :: :ok | {:error, term}
-  def write(ref, address, data) do
-    Nif.write(ref, address, data)
+  @spec write(reference, i2c_address, binary, keyword) :: :ok | {:error, term}
+  def write(ref, address, data, opts \\ []) do
+    retries = Keyword.get(opts, :retries, 0)
+    retry(fn -> Nif.write(ref, address, data) end, retries)
+  end
+
+  @doc """
+  Write `data` to the I2C device at `address` and raise on error
+
+  Options:
+
+  * :retries - number of retries before failing (defaults to no retries)
+  """
+  @spec write!(reference, i2c_address, binary, keyword) :: :ok
+  def write!(ref, address, data, opts \\ []) do
+    retries = Keyword.get(opts, :retries, 0)
+    retry!(fn -> Nif.write(ref, address, data) end, retries)
   end
 
   @doc """
@@ -59,10 +96,31 @@ defmodule Circuits.I2C do
   immediately follows the write. If the target supports this, the I2C
   transaction will be issued that way. On the Raspberry Pi, this can be enabled
   globally with `File.write!("/sys/module/i2c_bcm2708/parameters/combined", "1")`
+
+  Options:
+
+  * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write_read(reference, i2c_address, binary, pos_integer) :: {:ok, binary} | {:error, term}
-  def write_read(ref, address, write_data, read_count) do
-    Nif.write_read(ref, address, write_data, read_count)
+  @spec write_read(reference, i2c_address, binary, pos_integer, keyword) ::
+          {:ok, binary} | {:error, term}
+  def write_read(ref, address, write_data, read_count, opts \\ []) do
+    retries = Keyword.get(opts, :retries, 0)
+
+    retry(fn -> Nif.write_read(ref, address, write_data, read_count) end, retries)
+  end
+
+  @doc """
+  Write `data` to an I2C device and then immediately issue a read. Raise on errors.
+
+  Options:
+
+  * :retries - number of retries before failing (defaults to no retries)
+  """
+  @spec write_read!(reference, i2c_address, binary, pos_integer, keyword) :: binary
+  def write_read!(ref, address, write_data, read_count, opts \\ []) do
+    retries = Keyword.get(opts, :retries, 0)
+
+    retry!(fn -> Nif.write_read(ref, address, write_data, read_count) end, retries)
   end
 
   @doc """
@@ -128,10 +186,45 @@ defmodule Circuits.I2C do
     end
   end
 
+  @doc """
+  Provide a helpful message when forgetting to pass a device name
+
+  This is only intended to be called from the iex prompt and it's
+  almost certainly done by accident.
+  """
+  @spec detect_devices() :: {:error, :no_device}
+  def detect_devices() do
+    IO.puts("Specify an I2C device name to scan for devices. Try one of the following:\n")
+    Enum.each(device_names(), &IO.puts([" * ", &1]))
+    {:error, :no_device}
+  end
+
   defp device_present?(i2c, address) do
     case read(i2c, address, 1) do
       {:ok, _} -> true
       _ -> false
+    end
+  end
+
+  defp retry!(fun, times) do
+    case retry(fun, times) do
+      {:error, reason} ->
+        raise "I2C failure: " <> to_string(reason)
+
+      :ok ->
+        :ok
+
+      {:ok, result} ->
+        result
+    end
+  end
+
+  defp retry(fun, 0), do: fun.()
+
+  defp retry(fun, times) when times > 0 do
+    case fun.() do
+      {:error, _reason} -> retry(fun, times - 1)
+      result -> result
     end
   end
 end
