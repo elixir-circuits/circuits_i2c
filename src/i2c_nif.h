@@ -25,6 +25,14 @@
 #define I2C_BUFFER_MAX 8192
 
 /**
+ * Return information about the HAL.
+ *
+ * This should return a map with the name of the HAL and any info that
+ * would help debug issues with it.
+ */
+ERL_NIF_TERM hal_info(ErlNifEnv *env);
+
+/**
  * Open an I2C device
  *
  * @param device the name of the I2C device

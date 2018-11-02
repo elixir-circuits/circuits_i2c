@@ -210,13 +210,19 @@ static ERL_NIF_TERM i2c_close(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     return priv->atom_ok;
 }
 
+static ERL_NIF_TERM i2c_info(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
+{
+    return hal_info(env);
+}
+
 static ErlNifFunc nif_funcs[] =
 {
     {"open", 1, i2c_open, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"read", 3, i2c_read, 0},
     {"write", 3, i2c_write, 0},
     {"write_read", 4, i2c_write_read, 0},
-    {"close", 1, i2c_close, 0}
+    {"close", 1, i2c_close, 0},
+    {"info", 0, i2c_info, 0}
 };
 
 ERL_NIF_INIT(Elixir.Circuits.I2C.Nif, nif_funcs, i2c_load, NULL, NULL, i2c_unload)
