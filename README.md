@@ -28,13 +28,6 @@ Internally, it uses the [Linux "i2cdev"
 interface](https://elixir.bootlin.com/linux/latest/source/Documentation/i2c/dev-interface)
 so that it does not require board-dependent code.
 
-## Examples
-
-The following examples were tested on a Raspberry Pi that was connected to an
-[Erlang Embedded Demo Board](http://solderpad.com/omerk/erlhwdemo/). There's
-nothing special about either the demo board or the Raspberry Pi, so these should
-work similarly on other embedded Linux platforms.
-
 ## I2C
 
 An [Inter-Integrated Circuit](https://en.wikipedia.org/wiki/I%C2%B2C) (I2C) bus
@@ -54,7 +47,7 @@ Here's a simple example of using it.
 iex> alias Circuits.I2C
 Circuits.I2C
 iex> {:ok, ref} = I2C.open("i2c-1")
-{:ok, #Reference<0.1994877202.537788433.199599>}
+{:ok, #Reference<...>}
 
 # By default, all 8 GPIOs are set to inputs. Set the 4 high bits to outputs
 # so that we can toggle the LEDs. (Write 0x0f to register 0x00)
@@ -72,12 +65,12 @@ iex> I2C.write(ref, 0x20, <<0>>)  # Set the next register to be read to 0
 :ok
 
 iex> I2C.read(ref, 0x20, 11)
-<<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>
+{:ok, <<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>}
 
 # The operation of writing one or more bytes to select a register and
 # then reading is very common, so a shortcut is to just run the following:
 iex> I2C.write_read(ref, 0x20, <<0>>, 11)
-<<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>
+{:ok, <<15, 0, 0, 0, 0, 0, 0, 0, 0, 17, 16>>}
 
 # The 17 in register 9 says that bits 0 and bit 4 are high
 # We could have just read register 9.
@@ -146,6 +139,11 @@ Arduino from a computer that can run Elixir, check out
 Arduino's serial connection or
 [firmata](https://github.com/mobileoverlord/firmata) for communication using the
 Arduino's Firmata protocol.
+
+### How do I call Circuits I2C from Erlang?
+
+An Erlang friendly binding has been provided to simplify syntax when calling `Circuits.I2C` functions from Erlang code.  Instead of prefixing calls with: `'Elixir.Circuits.I2C':` you may use the binding: `circuits_i2c:`.
+For example: `circuits_i2c:open("i2c-1")`.
 
 ## License
 
