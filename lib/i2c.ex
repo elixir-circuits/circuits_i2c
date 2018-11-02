@@ -199,6 +199,14 @@ defmodule Circuits.I2C do
     {:error, :no_device}
   end
 
+  @doc """
+  Return info about the low level I2C interface
+
+  This may be helpful when debugging I2C issues.
+  """
+  @spec info() :: map
+  defdelegate info(), to: Nif
+
   defp device_present?(i2c, address) do
     case read(i2c, address, 1) do
       {:ok, _} -> true

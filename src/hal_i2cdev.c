@@ -27,6 +27,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+ERL_NIF_TERM hal_info(ErlNifEnv *env)
+{
+    ERL_NIF_TERM info = enif_make_new_map(env);
+    enif_make_map_put(env, info, enif_make_atom(env, "name"), enif_make_atom(env, "i2cdev"), &info);
+    return info;
+}
+
 int hal_i2c_open(const char *device)
 {
     char devpath[32]="/dev/";

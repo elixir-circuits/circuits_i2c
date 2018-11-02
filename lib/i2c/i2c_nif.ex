@@ -30,4 +30,8 @@ defmodule Circuits.I2C.Nif do
   def close(_ref) do
     :erlang.nif_error(:nif_not_loaded)
   end
+
+  def info() do
+    :erlang.nif_error(:nif_not_loaded)
+  end
 end

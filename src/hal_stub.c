@@ -19,6 +19,13 @@
 #include "i2c_nif.h"
 #include <string.h>
 
+ERL_NIF_TERM hal_info(ErlNifEnv *env)
+{
+    ERL_NIF_TERM info = enif_make_new_map(env);
+    enif_make_map_put(env, info, enif_make_atom(env, "name"), enif_make_atom(env, "stub"), &info);
+    return info;
+}
+
 int hal_i2c_open(const char *device)
 {
     return 0;
