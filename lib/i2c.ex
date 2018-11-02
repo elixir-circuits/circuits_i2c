@@ -227,4 +227,19 @@ defmodule Circuits.I2C do
       result -> result
     end
   end
+
+  defmodule :circuits_i2c do
+    @moduledoc """
+    Provide an Erlang friendly interface to Circuits
+    Example Erlang code:  circuits_i2c:open("i2c-1")
+    """
+    defdelegate open(devname), to: Circuits.I2C
+    defdelegate read(ref, address, count), to: Circuits.I2C
+    defdelegate read(ref, address, count, opts), to: Circuits.I2C
+    defdelegate write(ref, address, data), to: Circuits.I2C
+    defdelegate write(ref, address, data, opts), to: Circuits.I2C
+    defdelegate write_read(ref, address, write_data, read_count), to: Circuits.I2C
+    defdelegate write_read(ref, address, write_data, read_count, opts), to: Circuits.I2C
+    defdelegate close(ref), to: Circuits.I2C
+  end
 end
