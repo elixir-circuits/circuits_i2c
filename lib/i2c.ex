@@ -11,53 +11,65 @@ defmodule Circuits.I2C do
   @typedoc """
   I2C device address
 
-  This is a "7-bit" address for the device. Some devices
-  specify an "8-bit" address in their documentation. You can tell if you have
-  an "8-bit" address if it's greater than 127 (0x7f) or if the documentation
-  talks about different read and write addresses. If you have an 8-bit address,
-  divide it by 2.
+  This is a "7-bit" address for the device. Some devices specify an "8-bit"
+  address in their documentation. You can tell if you have an "8-bit" address
+  if it's greater than 127 (0x7f) or if the documentation talks about different
+  read and write addresses. If you have an 8-bit address, divide it by 2.
   """
-  @type i2c_address :: 0..127
+  @type i2c_address() :: 0..127
+
+  @typedoc """
+  I2C bus
+
+  Call `open/1` to obtain an I2C bus reference and then pass it to the read
+  and write functions for interacting with devices.
+  """
+  @type i2c_bus() :: reference()
+
+  @type opt() :: {:retries, non_neg_integer()}
 
   @doc """
-  Open an I2C device
+  Open an I2C bus
 
-  I2C device names depend on the platform. Each I2C device handles access to
-  one I2C bus. Names are of the form "i2c-n" where the "n" is the bus number.
-  The correct bus number can be found in the documentation for the device or on
-  a schematic. One other option is to call `Circuits.I2C.device_names/1` to
-  list them for you.
+  I2C bus names depend on the platform. Names are of the form "i2c-n" where the
+  "n" is the bus number.  The correct bus number can be found in the
+  documentation for the device or on a schematic. Another option is to call
+  `Circuits.I2C.device_names/1` to list them for you.
 
-  On success, this returns a reference to the I2C bus resource.  Use the
-  reference in subsequent calls to read/write I2C device
+  I2c buses may be opened more than once. There is no need to share an I2C bus
+  reference between modules.
+
+  On success, this returns a reference to the I2C bus.  Use the reference in
+  subsequent calls to read and write I2C devices
   """
-  @spec open(binary) :: {:ok, reference} | {:error, term}
+  @spec open(binary()) :: {:ok, i2c_bus()} | {:error, term()}
   def open(device) do
     Nif.open(to_charlist(device))
   end
 
   @doc """
-  Initiate a read transaction to the device at the specified `address`
+  Initiate a read transaction to the I2C device at the specified `address`
 
   Options:
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec read(reference, i2c_address, pos_integer, keyword) :: {:ok, binary} | {:error, term}
-  def read(ref, address, count, opts \\ []) do
+  @spec read(i2c_bus(), i2c_address(), pos_integer(), [opt()]) ::
+          {:ok, binary()} | {:error, term()}
+  def read(i2c_bus, address, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
 
-    retry(fn -> Nif.read(ref, address, count) end, retries)
+    retry(fn -> Nif.read(i2c_bus, address, bytes_to_read) end, retries)
   end
 
   @doc """
   Initiate a read transaction and raise on error
   """
-  @spec read!(reference, i2c_address, pos_integer, keyword) :: binary
-  def read!(ref, address, count, opts \\ []) do
+  @spec read!(i2c_bus(), i2c_address(), pos_integer(), [opt()]) :: binary()
+  def read!(i2c_bus, address, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
 
-    retry!(fn -> Nif.read(ref, address, count) end, retries)
+    retry!(fn -> Nif.read(i2c_bus, address, bytes_to_read) end, retries)
   end
 
   @doc """
@@ -67,10 +79,10 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write(reference, i2c_address, binary, keyword) :: :ok | {:error, term}
-  def write(ref, address, data, opts \\ []) do
+  @spec write(i2c_bus(), i2c_address(), binary(), [opt()]) :: :ok | {:error, term()}
+  def write(i2c_bus, address, data, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
-    retry(fn -> Nif.write(ref, address, data) end, retries)
+    retry(fn -> Nif.write(i2c_bus, address, data) end, retries)
   end
 
   @doc """
@@ -80,10 +92,10 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write!(reference, i2c_address, binary, keyword) :: :ok
-  def write!(ref, address, data, opts \\ []) do
+  @spec write!(i2c_bus(), i2c_address(), binary(), [opt()]) :: :ok
+  def write!(i2c_bus, address, data, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
-    retry!(fn -> Nif.write(ref, address, data) end, retries)
+    retry!(fn -> Nif.write(i2c_bus, address, data) end, retries)
   end
 
   @doc """
@@ -101,12 +113,12 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write_read(reference, i2c_address, binary, pos_integer, keyword) ::
-          {:ok, binary} | {:error, term}
-  def write_read(ref, address, write_data, read_count, opts \\ []) do
+  @spec write_read(i2c_bus(), i2c_address(), binary(), pos_integer(), [opt()]) ::
+          {:ok, binary()} | {:error, term()}
+  def write_read(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
 
-    retry(fn -> Nif.write_read(ref, address, write_data, read_count) end, retries)
+    retry(fn -> Nif.write_read(i2c_bus, address, write_data, bytes_to_read) end, retries)
   end
 
   @doc """
@@ -116,33 +128,33 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write_read!(reference, i2c_address, binary, pos_integer, keyword) :: binary
-  def write_read!(ref, address, write_data, read_count, opts \\ []) do
+  @spec write_read!(i2c_bus(), i2c_address(), binary(), pos_integer(), [opt()]) :: binary()
+  def write_read!(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
 
-    retry!(fn -> Nif.write_read(ref, address, write_data, read_count) end, retries)
+    retry!(fn -> Nif.write_read(i2c_bus, address, write_data, bytes_to_read) end, retries)
   end
 
   @doc """
-  close the I2C device
+  close the I2C bus
   """
-  @spec close(reference) :: :ok
-  def close(ref) do
-    Nif.close(ref)
+  @spec close(i2c_bus()) :: :ok
+  def close(i2c_bus) do
+    Nif.close(i2c_bus)
   end
 
   @doc """
-  Return a list of available I2C bus device names.  If nothing is returned,
-  it's possible that the kernel driver for that I2C bus is not enabled or the
+  Return a list of available I2C bus names.  If nothing is returned, it's
+  possible that the kernel driver for that I2C bus is not enabled or the
   kernel's device tree is not configured. On Raspbian, run `raspi-config` and
   look in the advanced options.
 
   ```elixir
-  iex> Circuits.I2C.device_names
+  iex> Circuits.I2C.device_names()
   ["i2c-1"]
   ```
   """
-  @spec device_names() :: [binary]
+  @spec device_names() :: [binary()]
   def device_names() do
     Path.wildcard("/dev/i2c-*")
     |> Enum.map(fn p -> String.replace_prefix(p, "/dev/", "") end)
@@ -169,16 +181,16 @@ defmodule Circuits.I2C do
   If you already have a reference to an open device, then you may pass its
   `reference` to `detect_devices/1` instead.
   """
-  @spec detect_devices(reference() | binary) :: [i2c_address] | {:error, term}
-  def detect_devices(ref) when is_reference(ref) do
-    Enum.filter(0..127, &device_present?(ref, &1))
+  @spec detect_devices(i2c_bus() | binary()) :: [i2c_address()] | {:error, term()}
+  def detect_devices(i2c_bus) when is_reference(i2c_bus) do
+    Enum.filter(0..127, &device_present?(i2c_bus, &1))
   end
 
   def detect_devices(dev_name) when is_binary(dev_name) do
     case open(dev_name) do
-      {:ok, ref} ->
-        devices = detect_devices(ref)
-        close(ref)
+      {:ok, i2c_bus} ->
+        devices = detect_devices(i2c_bus)
+        close(i2c_bus)
         devices
 
       error ->
@@ -187,14 +199,14 @@ defmodule Circuits.I2C do
   end
 
   @doc """
-  Provide a helpful message when forgetting to pass a device name
+  Provide a helpful message when forgetting to pass a bus name
 
-  This is only intended to be called from the iex prompt and it's
-  almost certainly done by accident.
+  This is only intended to be called from the iex prompt and it's almost
+  certainly done by accident.
   """
   @spec detect_devices() :: {:error, :no_device}
   def detect_devices() do
-    IO.puts("Specify an I2C device name to scan for devices. Try one of the following:\n")
+    IO.puts("Specify an I2C bus to scan for devices. Try one of the following:\n")
     Enum.each(device_names(), &IO.puts([" * ", &1]))
     {:error, :no_device}
   end
@@ -204,7 +216,7 @@ defmodule Circuits.I2C do
 
   This may be helpful when debugging I2C issues.
   """
-  @spec info() :: map
+  @spec info() :: map()
   defdelegate info(), to: Nif
 
   defp device_present?(i2c, address) do
