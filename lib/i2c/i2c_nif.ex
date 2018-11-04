@@ -2,9 +2,7 @@ defmodule Circuits.I2C.Nif do
   @on_load {:load_nif, 0}
   @compile {:autoload, false}
 
-  @doc """
-  Elixir interface to I2C Natively Implemented Functions (NIFs)
-  """
+  @moduledoc false
 
   def load_nif() do
     nif_binary = Application.app_dir(:circuits_i2c, "priv/i2c_nif")
