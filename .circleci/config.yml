@@ -42,6 +42,12 @@ jobs:
       - run: mix format --check-formatted
       - run: mix test
       - run: mix docs
+      - run: mix dialyzer --halt-exit-status
+      - save_cache:
+          key: v1-dependency-cache-{{ checksum "mix.lock" }}
+          paths:
+            - _build
+            - deps
 
   build_elixir_1_6_otp_21:
     docker:
