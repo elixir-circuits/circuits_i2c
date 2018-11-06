@@ -41,6 +41,7 @@ The remain modifications should mostly be mechanical:
    collector will free unreferenced I2C references.
 7. If you manually implemented I2C bus retry logic, consider specifying the
    `:retries` option to have `Circuits.I2C` retry for you.
+8. Change calls to `ElixirALE.I2C.device_names/0` to `Circuits.I2C.bus_names/0`.
 
 If you find that you have to make any other changes, please let us know via an
 issue or PR so that other users can benefit.
