@@ -34,7 +34,7 @@ defmodule Circuits.I2C do
   I2C bus names depend on the platform. Names are of the form "i2c-n" where the
   "n" is the bus number.  The correct bus number can be found in the
   documentation for the device or on a schematic. Another option is to call
-  `Circuits.I2C.device_names/1` to list them for you.
+  `Circuits.I2C.bus_names/1` to list them for you.
 
   I2c buses may be opened more than once. There is no need to share an I2C bus
   reference between modules.
@@ -150,12 +150,12 @@ defmodule Circuits.I2C do
   look in the advanced options.
 
   ```elixir
-  iex> Circuits.I2C.device_names()
+  iex> Circuits.I2C.bus_names()
   ["i2c-1"]
   ```
   """
-  @spec device_names() :: [binary()]
-  def device_names() do
+  @spec bus_names() :: [binary()]
+  def bus_names() do
     Path.wildcard("/dev/i2c-*")
     |> Enum.map(fn p -> String.replace_prefix(p, "/dev/", "") end)
   end
@@ -207,7 +207,7 @@ defmodule Circuits.I2C do
   @spec detect_devices() :: {:error, :no_device}
   def detect_devices() do
     IO.puts("Specify an I2C bus to scan for devices. Try one of the following:\n")
-    Enum.each(device_names(), &IO.puts([" * ", &1]))
+    Enum.each(bus_names(), &IO.puts([" * ", &1]))
     {:error, :no_device}
   end
 
