@@ -42,7 +42,7 @@ defmodule Circuits.I2C do
   On success, this returns a reference to the I2C bus.  Use the reference in
   subsequent calls to read and write I2C devices
   """
-  @spec open(binary()) :: {:ok, i2c_bus()} | {:error, term()}
+  @spec open(binary() | charlist()) :: {:ok, i2c_bus()} | {:error, term()}
   def open(device) do
     Nif.open(to_charlist(device))
   end
