@@ -34,7 +34,7 @@ defmodule Circuits.I2C do
   I2C bus names depend on the platform. Names are of the form "i2c-n" where the
   "n" is the bus number.  The correct bus number can be found in the
   documentation for the device or on a schematic. Another option is to call
-  `Circuits.I2C.bus_names/1` to list them for you.
+  `Circuits.I2C.bus_names/0` to list them for you.
 
   I2c buses may be opened more than once. There is no need to share an I2C bus
   reference between modules.
