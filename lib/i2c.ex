@@ -79,10 +79,12 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write(i2c_bus(), i2c_address(), binary(), [opt()]) :: :ok | {:error, term()}
+  @spec write(i2c_bus(), i2c_address(), iodata(), [opt()]) :: :ok | {:error, term()}
   def write(i2c_bus, address, data, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
-    retry(fn -> Nif.write(i2c_bus, address, data) end, retries)
+    data_as_binary = IO.iodata_to_binary(data)
+
+    retry(fn -> Nif.write(i2c_bus, address, data_as_binary) end, retries)
   end
 
   @doc """
@@ -92,10 +94,12 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write!(i2c_bus(), i2c_address(), binary(), [opt()]) :: :ok
+  @spec write!(i2c_bus(), i2c_address(), iodata(), [opt()]) :: :ok
   def write!(i2c_bus, address, data, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
-    retry!(fn -> Nif.write(i2c_bus, address, data) end, retries)
+    data_as_binary = IO.iodata_to_binary(data)
+
+    retry!(fn -> Nif.write(i2c_bus, address, data_as_binary) end, retries)
   end
 
   @doc """
@@ -113,12 +117,13 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write_read(i2c_bus(), i2c_address(), binary(), pos_integer(), [opt()]) ::
+  @spec write_read(i2c_bus(), i2c_address(), iodata(), pos_integer(), [opt()]) ::
           {:ok, binary()} | {:error, term()}
   def write_read(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
+    data_as_binary = IO.iodata_to_binary(write_data)
 
-    retry(fn -> Nif.write_read(i2c_bus, address, write_data, bytes_to_read) end, retries)
+    retry(fn -> Nif.write_read(i2c_bus, address, data_as_binary, bytes_to_read) end, retries)
   end
 
   @doc """
@@ -128,11 +133,12 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write_read!(i2c_bus(), i2c_address(), binary(), pos_integer(), [opt()]) :: binary()
+  @spec write_read!(i2c_bus(), i2c_address(), iodata(), pos_integer(), [opt()]) :: binary()
   def write_read!(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
+    data_as_binary = IO.iodata_to_binary(write_data)
 
-    retry!(fn -> Nif.write_read(i2c_bus, address, write_data, bytes_to_read) end, retries)
+    retry!(fn -> Nif.write_read(i2c_bus, address, data_as_binary, bytes_to_read) end, retries)
   end
 
   @doc """
