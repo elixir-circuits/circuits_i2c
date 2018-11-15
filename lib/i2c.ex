@@ -43,8 +43,8 @@ defmodule Circuits.I2C do
   subsequent calls to read and write I2C devices
   """
   @spec open(binary() | charlist()) :: {:ok, i2c_bus()} | {:error, term()}
-  def open(device) do
-    Nif.open(to_charlist(device))
+  def open(bus_name) do
+    Nif.open(to_charlist(bus_name))
   end
 
   @doc """
@@ -192,8 +192,8 @@ defmodule Circuits.I2C do
     Enum.filter(0..127, &device_present?(i2c_bus, &1))
   end
 
-  def detect_devices(dev_name) when is_binary(dev_name) do
-    case open(dev_name) do
+  def detect_devices(bus_name) when is_binary(bus_name) do
+    case open(bus_name) do
       {:ok, i2c_bus} ->
         devices = detect_devices(i2c_bus)
         close(i2c_bus)
@@ -259,7 +259,7 @@ defmodule Circuits.I2C do
     Provide an Erlang friendly interface to Circuits
     Example Erlang code:  circuits_i2c:open("i2c-1")
     """
-    defdelegate open(devname), to: Circuits.I2C
+    defdelegate open(bus_name), to: Circuits.I2C
     defdelegate read(ref, address, count), to: Circuits.I2C
     defdelegate read(ref, address, count, opts), to: Circuits.I2C
     defdelegate write(ref, address, data), to: Circuits.I2C
