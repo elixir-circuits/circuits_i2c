@@ -15,7 +15,7 @@ defmodule Circuits.I2C do
   if it's greater than 127 (0x7f) or if the documentation talks about different
   read and write addresses. If you have an 8-bit address, divide it by 2.
   """
-  @type i2c_address() :: 0..127
+  @type address() :: 0..127
 
   @typedoc """
   I2C bus
@@ -23,7 +23,7 @@ defmodule Circuits.I2C do
   Call `open/1` to obtain an I2C bus reference and then pass it to the read
   and write functions for interacting with devices.
   """
-  @type i2c_bus() :: reference()
+  @type bus() :: reference()
 
   @type opt() :: {:retries, non_neg_integer()}
 
@@ -41,7 +41,7 @@ defmodule Circuits.I2C do
   On success, this returns a reference to the I2C bus.  Use the reference in
   subsequent calls to read and write I2C devices
   """
-  @spec open(binary() | charlist()) :: {:ok, i2c_bus()} | {:error, term()}
+  @spec open(binary() | charlist()) :: {:ok, bus()} | {:error, term()}
   def open(bus_name) do
     Nif.open(to_charlist(bus_name))
   end
@@ -53,7 +53,7 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec read(i2c_bus(), i2c_address(), pos_integer(), [opt()]) ::
+  @spec read(bus(), address(), pos_integer(), [opt()]) ::
           {:ok, binary()} | {:error, term()}
   def read(i2c_bus, address, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
@@ -64,7 +64,7 @@ defmodule Circuits.I2C do
   @doc """
   Initiate a read transaction and raise on error
   """
-  @spec read!(i2c_bus(), i2c_address(), pos_integer(), [opt()]) :: binary()
+  @spec read!(bus(), address(), pos_integer(), [opt()]) :: binary()
   def read!(i2c_bus, address, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
 
@@ -78,7 +78,7 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write(i2c_bus(), i2c_address(), iodata(), [opt()]) :: :ok | {:error, term()}
+  @spec write(bus(), address(), iodata(), [opt()]) :: :ok | {:error, term()}
   def write(i2c_bus, address, data, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
     data_as_binary = IO.iodata_to_binary(data)
@@ -93,7 +93,7 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write!(i2c_bus(), i2c_address(), iodata(), [opt()]) :: :ok
+  @spec write!(bus(), address(), iodata(), [opt()]) :: :ok
   def write!(i2c_bus, address, data, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
     data_as_binary = IO.iodata_to_binary(data)
@@ -116,7 +116,7 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write_read(i2c_bus(), i2c_address(), iodata(), pos_integer(), [opt()]) ::
+  @spec write_read(bus(), address(), iodata(), pos_integer(), [opt()]) ::
           {:ok, binary()} | {:error, term()}
   def write_read(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
@@ -132,7 +132,7 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec write_read!(i2c_bus(), i2c_address(), iodata(), pos_integer(), [opt()]) :: binary()
+  @spec write_read!(bus(), address(), iodata(), pos_integer(), [opt()]) :: binary()
   def write_read!(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
     data_as_binary = IO.iodata_to_binary(write_data)
@@ -143,7 +143,7 @@ defmodule Circuits.I2C do
   @doc """
   close the I2C bus
   """
-  @spec close(i2c_bus()) :: :ok
+  @spec close(bus()) :: :ok
   def close(i2c_bus) do
     Nif.close(i2c_bus)
   end
@@ -186,7 +186,7 @@ defmodule Circuits.I2C do
   If you already have a reference to an open device, then you may pass its
   `reference` to `detect_devices/1` instead.
   """
-  @spec detect_devices(i2c_bus() | binary()) :: [i2c_address()] | {:error, term()}
+  @spec detect_devices(bus() | binary()) :: [address()] | {:error, term()}
   def detect_devices(i2c_bus) when is_reference(i2c_bus) do
     Enum.filter(0..127, &device_present?(i2c_bus, &1))
   end
