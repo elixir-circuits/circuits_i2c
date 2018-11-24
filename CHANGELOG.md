@@ -4,3 +4,8 @@
 
 Initial release to hex.
 
+## v0.2.0
+
+Minor text updates.
+
+Remove i2c_ from i2c_address and i2c_bus. 
