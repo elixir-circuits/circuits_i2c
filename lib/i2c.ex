@@ -53,8 +53,7 @@ defmodule Circuits.I2C do
 
   * :retries - number of retries before failing (defaults to no retries)
   """
-  @spec read(bus(), address(), pos_integer(), [opt()]) ::
-          {:ok, binary()} | {:error, term()}
+  @spec read(bus(), address(), pos_integer(), [opt()]) :: {:ok, binary()} | {:error, term()}
   def read(i2c_bus, address, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
 
@@ -204,16 +203,31 @@ defmodule Circuits.I2C do
   end
 
   @doc """
-  Provide a helpful message when forgetting to pass a bus name
+  Convenience method to scan all I2C buses for devices
 
-  This is only intended to be called from the iex prompt and it's almost
-  certainly done by accident.
+  This is only intended to be called from the IEx prompt. Programs should
+  use `detect_devices/1`.
   """
-  @spec detect_devices() :: {:error, :no_device}
   def detect_devices() do
-    IO.puts("Specify an I2C bus to scan for devices. Try one of the following:\n")
-    Enum.each(bus_names(), &IO.puts([" * ", &1]))
-    {:error, :no_device}
+    buses = bus_names()
+
+    total_devices = Enum.reduce(buses, 0, &detect_and_print/2)
+
+    IO.puts("#{total_devices} devices detected on #{length(buses)} I2C buses")
+
+    :"do not show this result in output"
+  end
+
+  defp detect_and_print(bus_name, count) do
+    IO.puts("Devices on I2C bus \"#{bus_name}\":")
+
+    devices = detect_devices(bus_name)
+
+    Enum.each(devices, &IO.puts(" * #{&1}"))
+
+    IO.puts("")
+
+    count + length(devices)
   end
 
   @doc """
