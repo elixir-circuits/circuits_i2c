@@ -9,3 +9,8 @@ Initial release to hex.
 Minor text updates.
 
 Remove i2c_ from i2c_address and i2c_bus. 
+
+## v0.3.0
+
+Print detected devices instead of an error.
+ 
