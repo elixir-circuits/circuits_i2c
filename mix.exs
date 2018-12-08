@@ -4,7 +4,7 @@ defmodule Circuits.I2C.MixProject do
   def project do
     [
       app: :circuits_i2c,
-      version: "0.3.0-dev",
+      version: "0.3.0",
       elixir: "~> 1.6",
       description: description(),
       package: package(),
