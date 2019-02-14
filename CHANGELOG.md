@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.2
+
+* Bug fixes
+  * Fix file handle leak when I2C bus references were garbage collected.
+
 ## v0.3.1
 
 * Bug fixes
