@@ -33,6 +33,17 @@ struct I2cNifPriv {
     ERL_NIF_TERM atom_nak;
 };
 
+static void i2c_dtor(ErlNifEnv *env, void *obj)
+{
+    struct I2cNifRes *res = (struct I2cNifRes *) obj;
+
+    debug("i2c_dtor");
+    if (res->fd >= 0) {
+        hal_i2c_close(res->fd);
+        res->fd = -1;
+    }
+}
+
 static int i2c_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM info)
 {
 #ifdef DEBUG
@@ -48,7 +59,7 @@ static int i2c_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM info)
         return 1;
     }
 
-    priv->i2c_nif_res_type = enif_open_resource_type(env, NULL, "i2c_nif_res_type", NULL, ERL_NIF_RT_CREATE, NULL);
+    priv->i2c_nif_res_type = enif_open_resource_type(env, NULL, "i2c_nif_res_type", i2c_dtor, ERL_NIF_RT_CREATE, NULL);
     if (priv->i2c_nif_res_type == NULL) {
         error("open I2C NIF resource type failed");
         return 1;
