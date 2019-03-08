@@ -102,8 +102,13 @@ kernel and that the device tree configures it.
 Once an I2C bus is available, try detecting devices on it:
 
 ```elixir
-iex> Circuits.I2C.detect_devices("i2c-1")
-[4]
+iex> Circuits.I2C.detect_devices()
+Circuits.I2C.detect_devices
+Devices on I2C bus "i2c-1":
+ * 64
+ * 112
+
+2 devices detected on 1 I2C buses
 ```
 
 The return value here is a list of device addresses that were detected. It is
