@@ -22,8 +22,6 @@
 #define elapsed_microseconds() 0
 #endif
 
-#define I2C_BUFFER_MAX 8192
-
 /**
  * Return information about the HAL.
  *
