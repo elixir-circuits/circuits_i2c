@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.3
+
+* Bug fixes
+  * Fix binary handling in NIF. This fixes segfaults and other errors when run
+    on Raspbian.
+
 ## v0.3.2
 
 * Bug fixes
