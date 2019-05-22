@@ -132,7 +132,7 @@ you're not using Nerves.
 You'll need to fake out the hardware. Code to do this depends on what your
 hardware actually does, but here's one example:
 
-* http://www.cultivatehq.com/posts/compiling-and-testing-elixir-nerves-on-your-host-machine/
+* [Compiling and testing Elixir Nerves on your host machine](http://www.cultivatehq.com/posts/compiling-and-testing-elixir-nerves-on-your-host-machine/)
 
 Please share other examples if you have them.
 
