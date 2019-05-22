@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.3.4
+
+This release should work on Erlang/OTP 20 - 22 and Elixir 1.4 and
+newer. The CI process has been updated to verify more versions now.
+
+* Bug fixes
+  * Improve error message when bus doesn't exist
+
 ## v0.3.3
 
 * Bug fixes
