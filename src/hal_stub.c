@@ -18,6 +18,7 @@
 
 #include "i2c_nif.h"
 #include <string.h>
+#include <errno.h>
 
 ERL_NIF_TERM hal_info(ErlNifEnv *env)
 {
@@ -28,7 +29,13 @@ ERL_NIF_TERM hal_info(ErlNifEnv *env)
 
 int hal_i2c_open(const char *device)
 {
-    return 0;
+    if (strcmp(device, "i2c-0") == 0) {
+        /* "Success" */
+        return 0;
+    } else {
+        errno = ENOENT;
+        return -1;
+    }
 }
 
 void hal_i2c_close(int fd)

@@ -92,6 +92,10 @@ static ERL_NIF_TERM enif_make_errno_error(ErlNifEnv *env)
         reason = priv->atom_nak;
         break;
 #endif
+    case ENOENT:
+        reason = enif_make_atom(env, "bus_not_found");
+        break;
+
     default:
         // strerror isn't usually that helpful, so if these
         // errors happen, please report or update this code
