@@ -116,6 +116,26 @@ still possible that the device will work even if it does not detect, but you
 probably want to check wires at this point. If you have a logic analyzer, use it
 to verify that I2C transactions are being initiated on the bus.
 
+### I2C seems slow. What could be wrong?
+
+I2C buses are usually run at 100 kbit/s or 400 kbit/s. Many devices support
+higher speeds. The tradeoff is that higher speeds are sometimes don't work as
+well especially if you're using jumper cables to connect parts together. The
+Raspberry Pi runs the I2C bus at a low speed - probably for this reason.
+
+Other things to check:
+
+* Can you reduce the reads and writes? I2C devices let you read or write many
+  bytes at the same time. Each transaction has overhead so minimizing
+  transaction helps.
+* Can you reduce the total number of bytes in each transaction? For example, do
+  you need to read a particular register? Is there a mode that the device can be
+  put it so that it only returns useful data?
+* Can a write and read be combined? The `Circuits.I2C.write_read` function is
+  more efficent than a separate write followed by a read.
+* Does the device support a queue mode? Some devices have internal queues that
+  allow the host to copy out more than one sample each time.
+
 ### Where can I get help?
 
 The hardest part is communicating with a device for the first time. The issue is
