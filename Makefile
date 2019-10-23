@@ -66,13 +66,10 @@ $(BUILD)/%.o: src/%.c
 $(NIF): $(OBJ)
 	$(CC) -o $@ $(ERL_LDFLAGS) $(LDFLAGS) $^
 
-$(PREFIX):
-	mkdir -p $@
-
-$(BUILD):
+$(PREFIX) $(BUILD):
 	mkdir -p $@
 
 clean:
-	$(RM) $(NIF) $(BUILD)/*.o
+	$(RM) $(NIF) $(OBJ)
 
 .PHONY: all clean calling_from_make install
