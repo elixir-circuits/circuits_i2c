@@ -187,7 +187,7 @@ defmodule Circuits.I2C do
   """
   @spec detect_devices(bus() | binary()) :: [address()] | {:error, term()}
   def detect_devices(i2c_bus) when is_reference(i2c_bus) do
-    Enum.filter(0..127, &device_present?(i2c_bus, &1))
+    Enum.filter(0x03..0x77, &device_present?(i2c_bus, &1))
   end
 
   def detect_devices(bus_name) when is_binary(bus_name) do
