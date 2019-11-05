@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.5
+
+* Bug fixes
+  * Reduce the number of I2C addresses scanned for detection to avoid confusing
+    some devices.
+
 ## v0.3.4
 
 This release should work on Erlang/OTP 20 - 22 and Elixir 1.4 and
