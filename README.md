@@ -20,8 +20,9 @@ def deps do
 end
 ```
 
-`Circuits.I2C` doesn't load device drivers, so you'll need to load any necessary
-ones beforehand (If you are using nerves this is enabled for you already).  On the Raspberry Pi, the [Adafruit Raspberry Pi I2C
+`Circuits.I2C` doesn't load device drivers, so you may need to load them
+beforehand. If you are using Nerves on a supported platform, this is enabled for
+you already. If using Raspbian, the [Adafruit Raspberry Pi I2C
 instructions](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c)
 may be helpful.
 
