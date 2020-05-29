@@ -26,7 +26,7 @@ defaults: &defaults
   working_directory: ~/repo
 
 jobs:
-   build_elixir_1_10_otp_23:
+  build_elixir_1_10_otp_23:
     docker:
       - image: erlang:23.0
         environment:
