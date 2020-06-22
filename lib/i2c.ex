@@ -223,7 +223,7 @@ defmodule Circuits.I2C do
 
     devices = detect_devices(bus_name)
 
-    Enum.each(devices, &IO.puts(" * #{&1}"))
+    Enum.each(devices, &IO.puts(" * #{&1}  (0x#{Integer.to_string(&1, 16)})"))
 
     IO.puts("")
 

@@ -107,8 +107,8 @@ Once an I2C bus is available, try detecting devices on it:
 iex> Circuits.I2C.detect_devices()
 Circuits.I2C.detect_devices
 Devices on I2C bus "i2c-1":
- * 64
- * 112
+ * 64  (0x40)
+ * 112 (0x70)
 
 2 devices detected on 1 I2C buses
 ```
