@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.7
+
+* Improvements
+  * Add I2C address in hex showing detected devices
+
 ## v0.3.6
 
 * Bug fixes
