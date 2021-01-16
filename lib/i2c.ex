@@ -217,7 +217,39 @@ defmodule Circuits.I2C do
 
     :"do not show this result in output"
   end
+  
+  @doc """
+  Given a list of potential devices, find the bus and address. 
+  
+  Since I2C devises often have several hard coded addresses 
+  and may be on any bus, it may be helpful to discover the device. 
+  
+  Fails if there is more than one potential match, or there are no matches.
+  """
+  @spec discover([address()]) :: {bus(), address()} | {:error, :not_found}
+  def discover(possible_device_addresses) do
+    potential_devices = 
+      Enum.flat_map(bus_names(), &discover(&1, possible_device_addresses))
 
+    case potential_devices do
+      [actual_device] -> actual_device
+      [] -> {:error, :not_found}
+      _ -> {:error, :multiple_possible_matches}
+    end
+  end
+  
+  @spec discover(binary(), [address()]) :: [{bus(), address()}] | {:error, term()}
+  defp discover(bus_name, possible_devices) when is_binary(bus_name) do
+    case open(bus_name) do
+      {:ok, i2c_bus} -> 
+        results = Enum.filter(possible_devices, &device_present?(i2c_bus, &1))
+        close(i2c_bus)
+        results
+      _ -> 
+        []
+    end
+  end
+  
   defp detect_and_print(bus_name, count) do
     IO.puts("Devices on I2C bus \"#{bus_name}\":")
 
