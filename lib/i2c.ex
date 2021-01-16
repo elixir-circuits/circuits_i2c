@@ -239,7 +239,7 @@ defmodule Circuits.I2C do
   end
   
   @spec discover(binary(), [address()]) :: [{bus(), address()}] | {:error, term()}
-  defp discover(bus_name, possible_devices) when is_binary(bus_name) do
+  def discover(bus_name, possible_devices) when is_binary(bus_name) do
     case open(bus_name) do
       {:ok, i2c_bus} -> 
         results = 
