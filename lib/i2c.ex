@@ -242,7 +242,11 @@ defmodule Circuits.I2C do
   defp discover(bus_name, possible_devices) when is_binary(bus_name) do
     case open(bus_name) do
       {:ok, i2c_bus} -> 
-        results = Enum.filter(possible_devices, &device_present?(i2c_bus, &1))
+        results = 
+          possible_devices
+          |> Enum.filter(&device_present?(i2c_bus, &1))
+          |> Enum.map(&{bus_name, &1})
+          
         close(i2c_bus)
         results
       _ -> 
