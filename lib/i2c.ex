@@ -220,26 +220,32 @@ defmodule Circuits.I2C do
   
   @doc """
   Given a list of potential devices, find the bus and address. 
-  
-  Since I2C devises often have several hard coded addresses 
-  and may be on any bus, it may be helpful to discover the device. 
-  
-  Fails if there is more than one potential match, or there are no matches.
+  When working with an I2C devise that uses one of several hard coded addresses 
+  (such as a sensor), use this API to discover the bus name and address. 
   """
-  @spec discover([address()]) :: {bus(), address()} | {:error, :not_found}
-  def discover(possible_device_addresses) do
-    potential_devices = 
-      Enum.flat_map(bus_names(), &discover(&1, possible_device_addresses))
-
-    case potential_devices do
+  @spec discover!([address()]) :: [{bus(), address()}]
+  def discover!(possible_device_addresses) do
+    Enum.flat_map(bus_names(), &discover!(&1, possible_device_addresses))
+  end
+  
+  @doc """
+  Given a list of potential I2C addresses, return a tuple with the bus name
+  and address. 
+  
+  Fail with an error tuple if there is more than one potential match, or there 
+  are no matches.
+  """
+  @spec discover_one!([address()]) :: {bus(), address()} | {:error, term()}
+  def discover_one!(possible_addresses) do
+    case discover!(possible_addresses) do
       [actual_device] -> actual_device
       [] -> {:error, :not_found}
       _ -> {:error, :multiple_possible_matches}
     end
   end
   
-  @spec discover(binary(), [address()]) :: [{bus(), address()}] | {:error, term()}
-  defp discover(bus_name, possible_devices) when is_binary(bus_name) do
+  @spec discover!(binary(), [address()]) :: [{bus(), address()}]
+  defp discover!(bus_name, possible_devices) when is_binary(bus_name) do
     case open(bus_name) do
       {:ok, i2c_bus} -> 
         results = 
@@ -249,10 +255,10 @@ defmodule Circuits.I2C do
           
         close(i2c_bus)
         results
-      _ -> 
-        []
+      {:error, reason} -> 
+        raise "I2C discovery error: Opening #{bus_name} failed with #{reason}"
     end
-  end
+  end  
   
   defp detect_and_print(bus_name, count) do
     IO.puts("Devices on I2C bus \"#{bus_name}\":")
