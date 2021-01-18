@@ -25,6 +25,14 @@ defmodule Circuits.I2C do
   """
   @type bus() :: reference()
 
+  @typedoc """
+  Function to report back whether a device is present
+
+  See `discover/2` for how a custom function can improve device detection when
+  the type of device being looked for is known.
+  """
+  @type present?() :: (bus(), address() -> boolean())
+
   @type opt() :: {:retries, non_neg_integer()}
 
   @doc """
@@ -226,45 +234,69 @@ defmodule Circuits.I2C do
   end
 
   @doc """
-  Given a list of potential devices, find the bus and address.
-  When working with an I2C devise that uses one of several hard coded addresses
-  (such as a sensor), use this API to discover the bus name and address.
+  Scan all I2C buses for one or more devices
+
+  This function takes a list of possible addresses and an optional detection
+  function. It only scans addresses in the possible addresses list to avoid
+  disturbing unrelated I2C devices.
+
+  If a detection function is not passed in, a default one that performs a
+  simple read and checks whether it succeeds is used. If the desired device has
+  an ID register or other means of identification, the optional function should
+  try to query that. If passing a custom function, be sure to return `false`
+  rather than raise if there are errors.
+
+  A list of bus name and address tuples is returned. The list may be empty.
+
+  See also `discover_one/2`.
   """
-  @spec discover!([address()]) :: [{bus(), address()}]
-  def discover!(possible_device_addresses) do
-    Enum.flat_map(bus_names(), &discover!(&1, possible_device_addresses))
+  @spec discover([address()], present?()) :: [{binary(), address()}]
+  def discover(possible_addresses, present? \\ &device_present?/2) do
+    Enum.flat_map(bus_names(), &discover(&1, possible_addresses, present?))
+  end
+
+  @spec discover(binary(), [address()], present?()) :: [{binary(), address()}]
+  defp discover(bus_name, possible_addresses, present?) when is_binary(bus_name) do
+    case open(bus_name) do
+      {:ok, i2c_bus} ->
+        possible_addresses
+        |> Enum.filter(fn address -> present?.(i2c_bus, address) end)
+        |> Enum.map(&{bus_name, &1})
+
+      {:error, reason} ->
+        raise "I2C discovery error: Opening #{bus_name} failed with #{reason}"
+    end
   end
 
   @doc """
-  Given a list of potential I2C addresses, return a tuple with the bus name
-  and address.
+  Scans all I2C buses for one specific device
 
-  Fail with an error tuple if there is more than one potential match, or there
-  are no matches.
+  This function and `discover_one!/2` are convenience functions for the use
+  case of helping a user find a specific device. They both call `discover/2` with
+  a list of possible I2C addresses and an optional function for checking whether
+  the device is present.
+
+  This function returns an `:ok` or `:error` tuple depending on whether one and
+  only one device was found. See `discover_one!/2` for the raising version.
   """
-  @spec discover_one!([address()]) :: {bus(), address()} | {:error, term()}
-  def discover_one!(possible_addresses) do
-    case discover!(possible_addresses) do
-      [actual_device] -> actual_device
+  @spec discover_one([address()], present?()) ::
+          {:ok, {binary(), address()}} | {:error, :not_found | :multiple_possible_matches}
+  def discover_one(possible_addresses, present? \\ &device_present?/2) do
+    case discover(possible_addresses, present?) do
+      [actual_device] -> {:ok, actual_device}
       [] -> {:error, :not_found}
       _ -> {:error, :multiple_possible_matches}
     end
   end
 
-  @spec discover!(binary(), [address()]) :: [{bus(), address()}]
-  defp discover!(bus_name, possible_devices) when is_binary(bus_name) do
-    case open(bus_name) do
-      {:ok, i2c_bus} ->
-        results =
-          possible_devices
-          |> Enum.filter(&device_present?(i2c_bus, &1))
-          |> Enum.map(&{bus_name, &1})
-
-        close(i2c_bus)
-        results
-
-      {:error, reason} ->
-        raise "I2C discovery error: Opening #{bus_name} failed with #{reason}"
+  @doc """
+  Same as `discover_one/2` but raises on error
+  """
+  @spec discover_one!([address()], present?()) :: {binary(), address()}
+  def discover_one!(possible_addresses, present? \\ &device_present?/2) do
+    case discover_one(possible_addresses, present?) do
+      {:ok, actual_device} -> actual_device
+      {:error, reason} -> raise "I2C discovery error: #{inspect(reason)}"
     end
   end
 

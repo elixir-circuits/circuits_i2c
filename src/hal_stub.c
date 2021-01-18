@@ -73,7 +73,7 @@ int hal_i2c_transfer(int fd,
     else if (fd == 1 && i2c_test_1_open_count > 0 && addr == 0x20) {
         // Address 0x20 exists on "i2c-test-1"
         if (to_read_len > 0)
-            memset(to_read, 0, to_read_len);
+            memset(to_read, 0xff, to_read_len);
         return 0;
     }
 

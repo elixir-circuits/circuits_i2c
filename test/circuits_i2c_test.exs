@@ -38,4 +38,38 @@ defmodule Circuits.I2CTest do
     refute I2C.device_present?(i2c, 0x11)
     I2C.close(i2c)
   end
+
+  test "discover/1" do
+    assert [{"i2c-test-0", 0x10}, {"i2c-test-1", 0x20}] == I2C.discover([0x10, 0x20])
+    assert [{"i2c-test-0", 0x10}] == I2C.discover([0x10])
+    assert [] == I2C.discover([0x15])
+  end
+
+  test "discover/2" do
+    ids = [0x10, 0x20]
+
+    # Device 0x10 returns 0 and device 0x20 returns 0xff from the stub
+    assert [{"i2c-test-0", 0x10}] == I2C.discover(ids, &i2c_returns(&1, &2, <<0>>))
+    assert [{"i2c-test-1", 0x20}] == I2C.discover(ids, &i2c_returns(&1, &2, <<0xFF>>))
+  end
+
+  test "discover_one/2" do
+    ids = [0x10, 0x20]
+
+    assert {:ok, {"i2c-test-0", 0x10}} == I2C.discover_one(ids, &i2c_returns(&1, &2, <<0>>))
+    assert {:error, :not_found} == I2C.discover_one(ids, &i2c_returns(&1, &2, <<1>>))
+    assert {:error, :multiple_possible_matches} == I2C.discover_one(ids)
+  end
+
+  test "discover_one!/2" do
+    ids = [0x10, 0x20]
+
+    assert {"i2c-test-0", 0x10} == I2C.discover_one!(ids, &i2c_returns(&1, &2, <<0>>))
+    assert_raise RuntimeError, fn -> I2C.discover_one!(ids, &i2c_returns(&1, &2, <<1>>)) end
+    assert_raise RuntimeError, fn -> I2C.discover_one!(ids) end
+  end
+
+  defp i2c_returns(bus, address, what) do
+    I2C.read(bus, address, 1) == {:ok, what}
+  end
 end
