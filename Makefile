@@ -43,6 +43,11 @@ LDFLAGS += -fPIC -shared
 CFLAGS += -fPIC
 endif
 
+# Force the stub for testing
+ifeq ($(MIX_ENV),test)
+HAL_SRC = src/hal_stub.c
+endif
+
 # Set Erlang-specific compile and linker flags
 ERL_CFLAGS ?= -I$(ERL_EI_INCLUDE_DIR)
 ERL_LDFLAGS ?= -L$(ERL_EI_LIBDIR) -lei

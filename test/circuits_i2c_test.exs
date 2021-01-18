@@ -1,14 +1,7 @@
-defmodule CircuitsI2cTest do
+defmodule Circuits.I2CTest do
   use ExUnit.Case
 
   alias Circuits.I2C
-
-  test "info returns a map" do
-    info = I2C.info()
-
-    assert is_map(info)
-    assert Map.has_key?(info, :name)
-  end
 
   test "bus_names returns a list" do
     names = I2C.bus_names()
