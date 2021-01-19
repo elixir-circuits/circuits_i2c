@@ -8,6 +8,8 @@ defmodule Circuits.I2CNifTest do
 
     assert is_map(info)
     assert info.name == :stub
+    assert info.i2c_test_0_open == 0
+    assert info.i2c_test_1_open == 0
   end
 
   test "unloading NIF" do
@@ -17,7 +19,7 @@ defmodule Circuits.I2CNifTest do
       assert {:module, Circuits.I2C.Nif} == :code.ensure_loaded(Circuits.I2C.Nif)
 
       # Try running something to verify that it works.
-      {:ok, i2c} = I2C.open("i2c-0")
+      {:ok, i2c} = I2C.open("i2c-test-0")
       assert is_reference(i2c)
       I2C.close(i2c)
 
