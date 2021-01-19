@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.3.8
+
+* New features
+  * Add `Circuits.I2C.discover/2` and `Circuits.I2C.discover_one/2`. These
+    functions are intended for library authors wanting to provide good
+    suggestions or defaults to their users. See the hex docs for more
+    information. Thanks to Bruce Tate for the idea and PR.
+
+* Improvements
+  * The stub I2C implementation is now used whenever `MIX_ENV=test`. While this
+    is not generally useful for testing code that uses Circuits.I2C, it does
+    prevent accidental use of real I2C buses in unit tests on those systems
+    with real I2C buses.
+
 ## v0.3.7
 
 * Improvements
