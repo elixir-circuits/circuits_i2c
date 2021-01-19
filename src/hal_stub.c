@@ -20,6 +20,9 @@
 #include <string.h>
 #include <errno.h>
 
+#define I2C_TEST_0_FD 100
+#define I2C_TEST_1_FD 200
+
 static int i2c_test_0_open_count = 0;
 static int i2c_test_1_open_count = 0;
 
@@ -37,11 +40,11 @@ int hal_i2c_open(const char *device)
     if (strcmp(device, "i2c-test-0") == 0) {
         i2c_test_0_open_count++;
         debug("stub open 0 (0 count=%d)", i2c_test_0_open_count);
-        return 0;
+        return I2C_TEST_0_FD;
     } else if (strcmp(device, "i2c-test-1") == 0) {
         i2c_test_1_open_count++;
         debug("stub open 1 (1 count=%d)", i2c_test_1_open_count);
-        return 1;
+        return I2C_TEST_1_FD;
     } else {
         errno = ENOENT;
         return -1;
@@ -50,9 +53,9 @@ int hal_i2c_open(const char *device)
 
 void hal_i2c_close(int fd)
 {
-    if (fd == 0)
+    if (fd == I2C_TEST_0_FD)
         i2c_test_0_open_count--;
-    if (fd == 1)
+    if (fd == I2C_TEST_1_FD)
         i2c_test_1_open_count--;
     debug("stub close %d (0 count=%d, 1 count=%d)", fd, i2c_test_0_open_count, i2c_test_1_open_count);
 }
@@ -63,14 +66,14 @@ int hal_i2c_transfer(int fd,
                      uint8_t *to_read, size_t to_read_len)
 {
     debug("transfer fd=%d, addr=0x%0x", fd, addr);
-    if (fd == 0 && i2c_test_0_open_count > 0 && addr == 0x10) {
+    if (fd == I2C_TEST_0_FD && i2c_test_0_open_count > 0 && addr == 0x10) {
         // Address 0x10 exists on "i2c-test-0"
         if (to_read_len > 0)
             memset(to_read, 0, to_read_len);
 
         return 0;
     }
-    else if (fd == 1 && i2c_test_1_open_count > 0 && addr == 0x20) {
+    else if (fd == I2C_TEST_1_FD && i2c_test_1_open_count > 0 && addr == 0x20) {
         // Address 0x20 exists on "i2c-test-1"
         if (to_read_len > 0)
             memset(to_read, 0xff, to_read_len);
