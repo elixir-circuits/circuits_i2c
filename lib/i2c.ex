@@ -231,19 +231,28 @@ defmodule Circuits.I2C do
   end
 
   @doc """
+  Return whether a device is present
+
+  This function performs a simplistic check for an I2C device on the specified
+  bus and address. It's not perfect, but works enough to be useful. Be warned
+  that it does perform an I2C read on the specified address and this may cause
+  some devices to actually do something.
+  """
+  @spec device_present?(bus(), address()) :: boolean()
+  def device_present?(i2c, address) do
+    case read(i2c, address, 1) do
+      {:ok, _} -> true
+      _ -> false
+    end
+  end
+
+  @doc """
   Return info about the low level I2C interface
 
   This may be helpful when debugging I2C issues.
   """
   @spec info() :: map()
   defdelegate info(), to: Nif
-
-  defp device_present?(i2c, address) do
-    case read(i2c, address, 1) do
-      {:ok, _} -> true
-      _ -> false
-    end
-  end
 
   defp retry!(fun, times) do
     case retry(fun, times) do
