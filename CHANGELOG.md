@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.9
+
+This release only has doc and build output cleanup. No code has changed.
+
 ## v0.3.8
 
 * New features
