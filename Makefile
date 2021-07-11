@@ -67,9 +67,11 @@ install: $(PREFIX) $(BUILD) $(NIF)
 $(OBJ): $(HEADERS) Makefile
 
 $(BUILD)/%.o: src/%.c
+	@echo " CC $(notdir $@)"
 	$(CC) -c $(ERL_CFLAGS) $(CFLAGS) -o $@ $<
 
 $(NIF): $(OBJ)
+	@echo " LD $(notdir $@)"
 	$(CC) -o $@ $(ERL_LDFLAGS) $(LDFLAGS) $^
 
 $(PREFIX) $(BUILD):
@@ -79,3 +81,6 @@ clean:
 	$(RM) $(NIF) $(OBJ)
 
 .PHONY: all clean calling_from_make install
+
+# Don't echo commands unless the caller exports "V=1"
+${V}.SILENT:
