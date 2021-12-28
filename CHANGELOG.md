@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.1 - 12-28-2021
+
+* Fixes
+  * Properly mark I/O bound functions in NIF.
+
 ## v1.0.0 - 10-20-2021
 
 This release only changes the version number. No code has changed.
