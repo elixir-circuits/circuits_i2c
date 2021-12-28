@@ -241,10 +241,10 @@ static ERL_NIF_TERM i2c_info(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
 static ErlNifFunc nif_funcs[] =
 {
     {"open", 1, i2c_open, ERL_NIF_DIRTY_JOB_IO_BOUND},
-    {"read", 3, i2c_read, 0},
-    {"write", 3, i2c_write, 0},
-    {"write_read", 4, i2c_write_read, 0},
-    {"close", 1, i2c_close, 0},
+    {"read", 3, i2c_read, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"write", 3, i2c_write, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"write_read", 4, i2c_write_read, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"close", 1, i2c_close, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"info", 0, i2c_info, 0}
 };
 
