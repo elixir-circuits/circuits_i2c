@@ -23,9 +23,9 @@ defmodule Circuits.I2CNifTest do
       assert {:module, Circuits.I2C.Nif} == :code.ensure_loaded(Circuits.I2C.Nif)
 
       # Try running something to verify that it works.
-      {:ok, i2c} = I2C.open("i2c-test-0")
-      assert is_reference(i2c)
-      I2C.close(i2c)
+      {:ok, bus} = I2C.open("i2c-test-0")
+      assert is_reference(bus.ref)
+      I2C.close(bus)
 
       assert true == :code.delete(Circuits.I2C.Nif)
 

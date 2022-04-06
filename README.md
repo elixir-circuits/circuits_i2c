@@ -151,10 +151,54 @@ you're not using Nerves.
 
 ### Can I develop code that uses Circuits.I2C on my laptop?
 
-You'll need to fake out the hardware. Code to do this depends on what your
-hardware actually does, but here's one example:
+`Circuits.I2C` implements a protocol based on a bus structure. This allows you
+to swap out backends with `Circuits.I2C` based on your needs but still use the
+defined API.
 
-* [Compiling and testing Elixir Nerves on your host machine](http://www.cultivatehq.com/posts/compiling-and-testing-elixir-nerves-on-your-host-machine/)
+For example, for testing you could implment an `LocalBus` backend the implements
+`Circuits.I2C.Protocol` to respond with data based on specific requests:
+
+```elixir
+defmodule LocalBus do
+  use GenServer
+
+  defstruct :pid, :name
+
+  defimpl Circuits.I2C.Protocol do
+    def open(bus) do
+      case GenServer.start_link(__MODULE__, [], name: bus.name) do
+        {:ok, pid} -> {:ok, %{bus | pid: pid}}
+        err -> {:error, err}
+      end
+    end
+
+    def read(bus, addr, bytes_to_read, _opts) do
+      GenServer.call(bus.pid, {:read, addr, bytes_to_read})
+    end
+
+    ## .. This is not the full protocol for example brevity 
+  end
+
+  @impl GenServer
+  def init(_opts), do: {:ok, %{}}
+
+  @impl GenServer
+  def handle_call({:read, 0x10, 3}, _from, state), do: {:reply, <<1, 2, 3>>, state}
+  def handle_call({:read, _addr, size}, _from, state), do: {:reply, :binary.copy(<<0>>, size), state}
+end
+```
+
+Then in your tests or local development code, you can use the `LocalBus` instead:
+
+```elixir
+bus = %LocalBus{name: :my_bus_name} |> Circuits.I2C.open()
+
+Circuits.I2C.read(bus, 0x10, 3)
+{:ok, <<1, 2, 3>>}
+
+Circuits.I2C.read(bus, 0x01, 3)
+{:ok, <<0, 0, 0>>}
+```
 
 Please share other examples if you have them.
 

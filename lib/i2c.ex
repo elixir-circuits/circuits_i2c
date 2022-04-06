@@ -5,6 +5,11 @@ defmodule Circuits.I2C do
   """
   alias Circuits.I2C.Nif
 
+  defmodule Bus do
+    @moduledoc false
+    defstruct ref: nil, writes: [], read: 0, name: nil
+  end
+
   # Public API
 
   @typedoc """
@@ -23,7 +28,7 @@ defmodule Circuits.I2C do
   Call `open/1` to obtain an I2C bus reference and then pass it to the read
   and write functions for interacting with devices.
   """
-  @type bus() :: reference()
+  @type bus() :: %Bus{ref: reference(), writes: [{address(), iodata()}], read: pos_integer()}
 
   @typedoc """
   Function to report back whether a device is present
@@ -49,10 +54,12 @@ defmodule Circuits.I2C do
   On success, this returns a reference to the I2C bus.  Use the reference in
   subsequent calls to read and write I2C devices
   """
-  @spec open(binary() | charlist()) :: {:ok, bus()} | {:error, term()}
-  def open(bus_name) do
-    Nif.open(to_charlist(bus_name))
+  @spec open(binary() | charlist() | Circuits.I2C.Protocol.t()) :: {:ok, bus()} | {:error, term()}
+  def open(bus_name) when is_binary(bus_name) or is_list(bus_name) do
+    __MODULE__.Protocol.open(%Bus{name: to_charlist(bus_name)})
   end
+
+  def open(bus), do: __MODULE__.Protocol.open(bus)
 
   @doc """
   Initiate a read transaction to the I2C device at the specified `address`
@@ -62,21 +69,13 @@ defmodule Circuits.I2C do
   * :retries - number of retries before failing (defaults to no retries)
   """
   @spec read(bus(), address(), pos_integer(), [opt()]) :: {:ok, binary()} | {:error, term()}
-  def read(i2c_bus, address, bytes_to_read, opts \\ []) do
-    retries = Keyword.get(opts, :retries, 0)
-
-    retry(fn -> Nif.read(i2c_bus, address, bytes_to_read) end, retries)
-  end
+  defdelegate read(bus, address, bytes, opts \\ []), to: __MODULE__.Protocol
 
   @doc """
   Initiate a read transaction and raise on error
   """
   @spec read!(bus(), address(), pos_integer(), [opt()]) :: binary()
-  def read!(i2c_bus, address, bytes_to_read, opts \\ []) do
-    retries = Keyword.get(opts, :retries, 0)
-
-    retry!(fn -> Nif.read(i2c_bus, address, bytes_to_read) end, retries)
-  end
+  defdelegate read!(bus, address, bytes, opts \\ []), to: __MODULE__.Protocol
 
   @doc """
   Write `data` to the I2C device at `address`.
@@ -86,12 +85,7 @@ defmodule Circuits.I2C do
   * :retries - number of retries before failing (defaults to no retries)
   """
   @spec write(bus(), address(), iodata(), [opt()]) :: :ok | {:error, term()}
-  def write(i2c_bus, address, data, opts \\ []) do
-    retries = Keyword.get(opts, :retries, 0)
-    data_as_binary = IO.iodata_to_binary(data)
-
-    retry(fn -> Nif.write(i2c_bus, address, data_as_binary) end, retries)
-  end
+  defdelegate write(bus, address, data, opts \\ []), to: __MODULE__.Protocol
 
   @doc """
   Write `data` to the I2C device at `address` and raise on error
@@ -101,12 +95,7 @@ defmodule Circuits.I2C do
   * :retries - number of retries before failing (defaults to no retries)
   """
   @spec write!(bus(), address(), iodata(), [opt()]) :: :ok
-  def write!(i2c_bus, address, data, opts \\ []) do
-    retries = Keyword.get(opts, :retries, 0)
-    data_as_binary = IO.iodata_to_binary(data)
-
-    retry!(fn -> Nif.write(i2c_bus, address, data_as_binary) end, retries)
-  end
+  defdelegate write!(bus, address, data, opts \\ []), to: __MODULE__.Protocol
 
   @doc """
   Write `data` to an I2C device and then immediately issue a read.
@@ -125,12 +114,7 @@ defmodule Circuits.I2C do
   """
   @spec write_read(bus(), address(), iodata(), pos_integer(), [opt()]) ::
           {:ok, binary()} | {:error, term()}
-  def write_read(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
-    retries = Keyword.get(opts, :retries, 0)
-    data_as_binary = IO.iodata_to_binary(write_data)
-
-    retry(fn -> Nif.write_read(i2c_bus, address, data_as_binary, bytes_to_read) end, retries)
-  end
+  defdelegate write_read(bus, address, data, bytes, opts \\ []), to: __MODULE__.Protocol
 
   @doc """
   Write `data` to an I2C device and then immediately issue a read. Raise on errors.
@@ -140,20 +124,13 @@ defmodule Circuits.I2C do
   * :retries - number of retries before failing (defaults to no retries)
   """
   @spec write_read!(bus(), address(), iodata(), pos_integer(), [opt()]) :: binary()
-  def write_read!(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
-    retries = Keyword.get(opts, :retries, 0)
-    data_as_binary = IO.iodata_to_binary(write_data)
-
-    retry!(fn -> Nif.write_read(i2c_bus, address, data_as_binary, bytes_to_read) end, retries)
-  end
+  defdelegate write_read!(bus, address, data, bytes, opts \\ []), to: __MODULE__.Protocol
 
   @doc """
   close the I2C bus
   """
   @spec close(bus()) :: :ok
-  def close(i2c_bus) do
-    Nif.close(i2c_bus)
-  end
+  defdelegate close(bus), to: __MODULE__.Protocol
 
   @doc """
   Return a list of available I2C bus names.  If nothing is returned, it's
@@ -201,10 +178,6 @@ defmodule Circuits.I2C do
   `reference` to `detect_devices/1` instead.
   """
   @spec detect_devices(bus() | binary()) :: [address()] | {:error, term()}
-  def detect_devices(i2c_bus) when is_reference(i2c_bus) do
-    Enum.filter(0x03..0x77, &device_present?(i2c_bus, &1))
-  end
-
   def detect_devices(bus_name) when is_binary(bus_name) do
     case open(bus_name) do
       {:ok, i2c_bus} ->
@@ -215,6 +188,10 @@ defmodule Circuits.I2C do
       error ->
         error
     end
+  end
+
+  def detect_devices(i2c_bus) do
+    Enum.filter(0x03..0x77, &device_present?(i2c_bus, &1))
   end
 
   @doc """
@@ -340,26 +317,4 @@ defmodule Circuits.I2C do
   """
   @spec info() :: map()
   defdelegate info(), to: Nif
-
-  defp retry!(fun, times) do
-    case retry(fun, times) do
-      {:error, reason} ->
-        raise "I2C failure: " <> to_string(reason)
-
-      :ok ->
-        :ok
-
-      {:ok, result} ->
-        result
-    end
-  end
-
-  defp retry(fun, 0), do: fun.()
-
-  defp retry(fun, times) when times > 0 do
-    case fun.() do
-      {:error, _reason} -> retry(fun, times - 1)
-      result -> result
-    end
-  end
 end

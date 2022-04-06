@@ -12,13 +12,13 @@ defmodule Circuits.I2CTest do
   end
 
   test "can open buses" do
-    {:ok, i2c} = I2C.open("i2c-test-0")
-    assert is_reference(i2c)
-    I2C.close(i2c)
+    {:ok, bus} = I2C.open("i2c-test-0")
+    assert is_reference(bus.ref)
+    I2C.close(bus)
 
-    {:ok, i2c} = I2C.open("i2c-test-1")
-    assert is_reference(i2c)
-    I2C.close(i2c)
+    {:ok, bus} = I2C.open("i2c-test-1")
+    assert is_reference(bus.ref)
+    I2C.close(bus)
   end
 
   test "error when opening unknown bus" do
