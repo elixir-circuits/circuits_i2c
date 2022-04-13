@@ -16,7 +16,7 @@ support, then add `circuits_i2c` like any other Elixir library:
 
 ```elixir
 def deps do
-  [{:circuits_i2c, "~> 0.1"}]
+  [{:circuits_i2c, "~> 1.0"}]
 end
 ```
 
