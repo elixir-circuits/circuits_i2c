@@ -167,13 +167,6 @@ Arduino's serial connection or
 [firmata](https://github.com/mobileoverlord/firmata) for communication using the
 Arduino's Firmata protocol.
 
-### How do I call Circuits.I2C from Erlang?
-
-An Erlang-friendly binding has been provided to simplify syntax when calling
-`Circuits.I2C` functions from Erlang code. Instead of prefixing calls with
-`'Elixir.Circuits.I2C':` use the binding `circuits_i2c:`.  For example:
-`circuits_i2c:open("i2c-1")`.
-
 ## License
 
 Code from the library is licensed under the Apache License, Version 2.0.
