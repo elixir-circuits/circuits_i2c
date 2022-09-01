@@ -21,7 +21,6 @@ defmodule Circuits.I2C.MixProject do
       docs: docs(),
       aliases: [format: [&format_c/1, "format"]],
       start_permanent: Mix.env() == :prod,
-      build_embedded: true,
       dialyzer: [
         flags: [:unmatched_returns, :error_handling, :race_conditions, :underspecs]
       ],
