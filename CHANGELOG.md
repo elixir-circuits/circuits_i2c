@@ -1,11 +1,23 @@
 # Changelog
 
-## v1.0.1 - 12-28-2021
+## v1.1.0 - 2022-11-16
+
+* Changes
+  * Immediately close I2C bus references after discovery. Waiting for the GC to
+    collect them could cause intermittent failures in rare scenarios where
+    multiple I2C device discoveries are done close together. This likely only
+    affects CI in practice.
+  * Remove Erlang convenience functions since no one used them
+  * Require Elixir 1.10 or later. Previous versions probably work, but won't be
+    supported. This opens up the possibility of using Elixir 1.10+ features in
+    future releases.
+
+## v1.0.1 - 2021-12-28
 
 * Fixes
   * Properly mark I/O bound functions in NIF.
 
-## v1.0.0 - 10-20-2021
+## v1.0.0 - 2021-10-20
 
 This release only changes the version number. No code has changed.
 
