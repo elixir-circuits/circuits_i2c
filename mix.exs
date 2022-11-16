@@ -40,8 +40,8 @@ defmodule Circuits.I2C.MixProject do
     %{
       files: [
         "lib",
-        "src/*.[ch]",
-        "src/linux/i2c-dev.h",
+        "c_src/*.[ch]",
+        "c_src/linux/i2c-dev.h",
         "mix.exs",
         "README.md",
         "PORTING.md",
