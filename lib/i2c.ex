@@ -259,9 +259,13 @@ defmodule Circuits.I2C do
   defp discover(bus_name, possible_addresses, present?) when is_binary(bus_name) do
     case open(bus_name) do
       {:ok, i2c_bus} ->
-        possible_addresses
-        |> Enum.filter(fn address -> present?.(i2c_bus, address) end)
-        |> Enum.map(&{bus_name, &1})
+        result =
+          possible_addresses
+          |> Enum.filter(fn address -> present?.(i2c_bus, address) end)
+          |> Enum.map(&{bus_name, &1})
+
+        close(i2c_bus)
+        result
 
       {:error, reason} ->
         raise "I2C discovery error: Opening #{bus_name} failed with #{reason}"
