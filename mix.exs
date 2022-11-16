@@ -4,14 +4,11 @@ defmodule Circuits.I2C.MixProject do
   @version "1.0.1"
   @source_url "https://github.com/elixir-circuits/circuits_i2c"
 
-  {:ok, system_version} = Version.parse(System.version())
-  @elixir_version {system_version.major, system_version.minor, system_version.patch}
-
   def project do
     [
       app: :circuits_i2c,
       version: @version,
-      elixir: "~> 1.4",
+      elixir: "~> 1.10",
       description: description(),
       package: package(),
       source_url: @source_url,
@@ -22,9 +19,9 @@ defmodule Circuits.I2C.MixProject do
       aliases: [format: [&format_c/1, "format"]],
       start_permanent: Mix.env() == :prod,
       dialyzer: [
-        flags: [:unmatched_returns, :error_handling, :race_conditions, :underspecs]
+        flags: [:missing_return, :extra_return, :unmatched_returns, :error_handling, :underspecs]
       ],
-      deps: deps(@elixir_version),
+      deps: deps(),
       preferred_cli_env: %{
         docs: :docs,
         "hex.publish": :docs,
@@ -57,19 +54,11 @@ defmodule Circuits.I2C.MixProject do
     }
   end
 
-  defp deps(elixir_version) when elixir_version >= {1, 7, 0} do
+  defp deps() do
     [
       {:ex_doc, "~> 0.22", only: :docs, runtime: false},
       {:credo, "~> 1.6", only: :dev, runtime: false},
-      {:dialyxir, "~> 1.2.0", only: :dev, runtime: false}
-      | deps()
-    ]
-  end
-
-  defp deps(_), do: deps()
-
-  defp deps() do
-    [
+      {:dialyxir, "~> 1.2", only: :dev, runtime: false},
       {:elixir_make, "~> 0.6", runtime: false}
     ]
   end
