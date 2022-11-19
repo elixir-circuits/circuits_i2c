@@ -8,6 +8,7 @@
 # Variables to override:
 #
 # MIX_APP_PATH  path to the build directory
+# MIX_ENV       Mix build environment - "test" forces use of the stub
 #
 # CC            C compiler
 # CROSSCOMPILE	crosscompiler prefix, if any
