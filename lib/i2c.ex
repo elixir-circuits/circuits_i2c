@@ -223,6 +223,7 @@ defmodule Circuits.I2C do
   This is only intended to be called from the IEx prompt. Programs should
   use `detect_devices/1`.
   """
+  @spec detect_devices() :: :"do not show this result in output"
   def detect_devices() do
     buses = bus_names()
 
