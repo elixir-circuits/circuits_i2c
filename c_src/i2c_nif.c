@@ -28,10 +28,11 @@ struct I2cNifRes {
 // I2C NIF Private data
 struct I2cNifPriv {
     ErlNifResourceType *i2c_nif_res_type;
-    ERL_NIF_TERM atom_ok;
-    ERL_NIF_TERM atom_error;
-    ERL_NIF_TERM atom_nak;
 };
+
+static ERL_NIF_TERM atom_ok;
+static ERL_NIF_TERM atom_error;
+static ERL_NIF_TERM atom_nak;
 
 static void i2c_dtor(ErlNifEnv *env, void *obj)
 {
@@ -65,9 +66,9 @@ static int i2c_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM info)
         return 1;
     }
 
-    priv->atom_ok = enif_make_atom(env, "ok");
-    priv->atom_error = enif_make_atom(env, "error");
-    priv->atom_nak = enif_make_atom(env, "i2c_nak");
+    atom_ok = enif_make_atom(env, "ok");
+    atom_error = enif_make_atom(env, "error");
+    atom_nak = enif_make_atom(env, "i2c_nak");
 
     *priv_data = priv;
     return 0;
@@ -83,13 +84,12 @@ static void i2c_unload(ErlNifEnv *env, void *priv_data)
 
 static ERL_NIF_TERM enif_make_errno_error(ErlNifEnv *env)
 {
-    struct I2cNifPriv *priv = enif_priv_data(env);
     ERL_NIF_TERM reason;
     switch (errno) {
 #ifdef EREMOTEIO
     case EREMOTEIO:
         // Remote I/O errors are I2C naks
-        reason = priv->atom_nak;
+        reason = atom_nak;
         break;
 #endif
     case ENOENT:
@@ -104,7 +104,7 @@ static ERL_NIF_TERM enif_make_errno_error(ErlNifEnv *env)
         break;
     }
 
-    return enif_make_tuple2(env, priv->atom_error, reason);
+    return enif_make_tuple2(env, atom_error, reason);
 }
 
 static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
@@ -126,7 +126,7 @@ static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     // Elixir side owns the resource. Safe for NIF side to release it.
     enif_release_resource(i2c_nif_res);
 
-    return enif_make_tuple2(env, priv->atom_ok, res_term);
+    return enif_make_tuple2(env, atom_ok, res_term);
 }
 
 static ERL_NIF_TERM i2c_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
@@ -151,10 +151,10 @@ static ERL_NIF_TERM i2c_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     raw_bin_read = enif_make_new_binary(env, read_len, &bin_read);
 
     if (!raw_bin_read)
-        return enif_make_tuple2(env, priv->atom_error, enif_make_atom(env, "alloc_failed"));
+        return enif_make_tuple2(env, atom_error, enif_make_atom(env, "alloc_failed"));
 
     if (hal_i2c_transfer(res->fd, addr, 0, 0, raw_bin_read, read_len) >= 0) {
-        return enif_make_tuple2(env, priv->atom_ok, bin_read);
+        return enif_make_tuple2(env, atom_ok, bin_read);
 
     }
     else
@@ -178,7 +178,7 @@ static ERL_NIF_TERM i2c_write(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
         return enif_make_badarg(env);
 
     if (hal_i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, 0, 0) >= 0)
-        return priv->atom_ok;
+        return atom_ok;
     else
         return enif_make_errno_error(env);
 }
@@ -208,10 +208,10 @@ static ERL_NIF_TERM i2c_write_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM 
     raw_bin_read = enif_make_new_binary(env, read_len, &bin_read);
 
     if (!raw_bin_read)
-        return enif_make_tuple2(env, priv->atom_error, enif_make_atom(env, "alloc_failed"));
+        return enif_make_tuple2(env, atom_error, enif_make_atom(env, "alloc_failed"));
 
     if (hal_i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, raw_bin_read, read_len) >= 0) {
-        return enif_make_tuple2(env, priv->atom_ok, bin_read);
+        return enif_make_tuple2(env, atom_ok, bin_read);
     }
     else
         return enif_make_errno_error(env);
@@ -230,7 +230,7 @@ static ERL_NIF_TERM i2c_close(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
         res->fd = -1;
     }
 
-    return priv->atom_ok;
+    return atom_ok;
 }
 
 static ERL_NIF_TERM i2c_info(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
