@@ -79,7 +79,7 @@ defmodule Circuits.I2C.MixProject do
         Mix.Shell.IO.info("Install astyle to format C code.")
 
       astyle ->
-        System.cmd(astyle, ["-n", "src/*.c"], into: IO.stream(:stdio, :line))
+        System.cmd(astyle, ["-n", "c_src/*.c"], into: IO.stream(:stdio, :line))
     end
   end
 
