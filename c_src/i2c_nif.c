@@ -174,7 +174,7 @@ static ERL_NIF_TERM i2c_write(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     if (!enif_get_uint(env, argv[1], &addr))
         return enif_make_badarg(env);
 
-    if (!enif_inspect_binary(env, argv[2], &bin_write))
+    if (!enif_inspect_iolist_as_binary(env, argv[2], &bin_write))
         return enif_make_badarg(env);
 
     if (hal_i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, 0, 0) >= 0)
@@ -199,7 +199,7 @@ static ERL_NIF_TERM i2c_write_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM 
     if (!enif_get_uint(env, argv[1], &addr))
         return enif_make_badarg(env);
 
-    if (!enif_inspect_binary(env, argv[2], &bin_write))
+    if (!enif_inspect_iolist_as_binary(env, argv[2], &bin_write))
         return enif_make_badarg(env);
 
     if (!enif_get_ulong(env, argv[3], &read_len))
