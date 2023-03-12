@@ -110,12 +110,12 @@ static ERL_NIF_TERM enif_make_errno_error(ErlNifEnv *env)
 static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
     struct I2cNifPriv *priv = enif_priv_data(env);
-    char device[16];
+    ErlNifBinary path;
 
-    if (!enif_get_string(env, argv[0], device, sizeof(device), ERL_NIF_LATIN1))
+    if (!enif_inspect_binary(env, argv[0], &path))
         return enif_make_badarg(env);
 
-    int fd = hal_i2c_open(device);
+    int fd = hal_i2c_open(path.data, path.size);
     if (fd < 0)
         return enif_make_errno_error(env);
 

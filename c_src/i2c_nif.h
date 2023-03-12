@@ -34,10 +34,11 @@ ERL_NIF_TERM hal_info(ErlNifEnv *env);
  * Open an I2C device
  *
  * @param device the name of the I2C device
+ * @param device_len the length of the device string
  *
  * @return <0 on error or a handle on success
  */
-int hal_i2c_open(const char *device);
+int hal_i2c_open(const unsigned char *device, size_t device_len);
 
 /**
  * Free resources associated with an I2C device

@@ -34,11 +34,10 @@ ERL_NIF_TERM hal_info(ErlNifEnv *env)
     return info;
 }
 
-int hal_i2c_open(const char *device)
+int hal_i2c_open(const unsigned char *device, size_t device_len)
 {
-    char devpath[32]="/dev/";
-
-    strncat(devpath, device, sizeof(devpath) - 1);
+    char devpath[32];
+    snprintf(devpath, sizeof(devpath), "/dev/%.*s", (int) device_len, device);
     return open(devpath, O_RDWR);
 }
 

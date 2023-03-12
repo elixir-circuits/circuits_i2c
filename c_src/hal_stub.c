@@ -35,13 +35,13 @@ ERL_NIF_TERM hal_info(ErlNifEnv *env)
     return info;
 }
 
-int hal_i2c_open(const char *device)
+int hal_i2c_open(const unsigned char *device, size_t device_len)
 {
-    if (strcmp(device, "i2c-test-0") == 0) {
+    if (device_len == 10 && memcmp(device, "i2c-test-0", 10) == 0) {
         i2c_test_0_open_count++;
         debug("stub open 0 (0 count=%d)", i2c_test_0_open_count);
         return I2C_TEST_0_FD;
-    } else if (strcmp(device, "i2c-test-1") == 0) {
+    } else if (device_len == 10 && memcmp(device, "i2c-test-1", 10) == 0) {
         i2c_test_1_open_count++;
         debug("stub open 1 (1 count=%d)", i2c_test_1_open_count);
         return I2C_TEST_1_FD;

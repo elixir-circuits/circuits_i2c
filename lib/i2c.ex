@@ -51,7 +51,7 @@ defmodule Circuits.I2C do
   """
   @spec open(binary() | charlist()) :: {:ok, bus()} | {:error, term()}
   def open(bus_name) do
-    Nif.open(to_charlist(bus_name))
+    Nif.open(to_string(bus_name))
   end
 
   @doc """
