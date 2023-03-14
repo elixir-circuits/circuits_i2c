@@ -24,37 +24,39 @@ BUILD  = $(MIX_APP_PATH)/obj
 
 NIF = $(PREFIX)/i2c_nif.so
 
+SRC = c_src/i2c_nif.c
 CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 
 # Check that we're on a supported build platform
 ifeq ($(CROSSCOMPILE),)
-    # Not crosscompiling, so check that we're on Linux.
-    ifneq ($(shell uname -s),Linux)
-        $(warning Elixir Circuits only works on Nerves and Linux platforms.)
-        $(warning A stub NIF will be compiled for test purposes.)
-	HAL_SRC = c_src/hal_stub.c
-        LDFLAGS += -undefined dynamic_lookup -dynamiclib
-    else
-        LDFLAGS += -fPIC -shared
-        CFLAGS += -fPIC
-    endif
+	# Not crosscompiling, so check that we're on Linux for whether to compile the NIF.
+	ifeq ($(shell uname -s),Linux)
+		CFLAGS += -fPIC
+		LDFLAGS += -fPIC -shared
+	else
+		CFLAGS += -Ic_src/compat
+		LDFLAGS += -undefined dynamic_lookup -dynamiclib
+		USE_STUB = yes
+	endif
 else
-# Crosscompiled build
-LDFLAGS += -fPIC -shared
-CFLAGS += -fPIC
+	# Crosscompiled build
+	LDFLAGS += -fPIC -shared
+	CFLAGS += -fPIC
 endif
 
-# Force the stub for testing
+# Force unit test version of NIF
 ifeq ($(MIX_ENV),test)
-HAL_SRC = c_src/hal_stub.c
+	USE_STUB = yes
+endif
+
+ifeq ($(USE_STUB),yes)
+	CFLAGS += -DUSE_STUB
 endif
 
 # Set Erlang-specific compile and linker flags
 ERL_CFLAGS ?= -I$(ERL_EI_INCLUDE_DIR)
 ERL_LDFLAGS ?= -L$(ERL_EI_LIBDIR) -lei
 
-HAL_SRC ?= c_src/hal_i2cdev.c
-SRC = $(HAL_SRC) c_src/i2c_nif.c
 HEADERS =$(wildcard c_src/*.h)
 OBJ = $(SRC:c_src/%.c=$(BUILD)/%.o)
 

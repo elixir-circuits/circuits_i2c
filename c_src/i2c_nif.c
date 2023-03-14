@@ -16,9 +16,84 @@
  * I2C NIF implementation.
  */
 
-#include "i2c_nif.h"
+#include <erl_nif.h>
+
 #include <errno.h>
+#include <fcntl.h>
 #include <string.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include "linux/i2c-dev.h"
+
+#ifdef USE_STUB
+#define BACKEND_NAME "stub"
+#define do_open stub_open
+#define do_ioctl stub_ioctl
+#define do_close stub_close
+
+int stub_open(const char *path, int flags)
+{
+    if (strcmp(path, "/dev/i2c-test-0") == 0)
+        return 0x10;
+    else if (strcmp(path, "/dev/i2c-test-1") == 0)
+        return 0x20;
+    else
+        return -1;
+}
+int stub_close(int fd)
+{
+    if (fd == 0x10 || fd == 0x20)
+        return 0;
+    else
+        return -1;
+}
+int stub_ioctl(int fd, unsigned long request, struct i2c_rdwr_ioctl_data *data)
+{
+    if (fd != 0x10 && fd != 0x20)
+        return -1;
+
+    if (request != I2C_RDWR)
+        return -1;
+
+    for (unsigned int i = 0; i < data->nmsgs; i++) {
+        struct i2c_msg *msg = &data->msgs[i];
+        if (msg->addr != fd)
+            return -1;
+
+        if (msg->flags & I2C_M_RD) {
+            for (int j = 0; j < msg->len; j++) {
+                msg->buf[j] = msg->addr + j;
+            }
+        }
+    }
+    return data->nmsgs;
+}
+#else
+#define BACKEND_NAME "i2c_dev"
+#define do_open open
+#define do_ioctl ioctl
+#define do_close close
+#endif
+
+//#define DEBUG
+
+#ifdef DEBUG
+#define log_location stderr
+//#define LOG_PATH "/tmp/circuits_i2c.log"
+#define debug(...) do { enif_fprintf(log_location, __VA_ARGS__); enif_fprintf(log_location, "\r\n"); fflush(log_location); } while(0)
+#define error(...) do { debug(__VA_ARGS__); } while (0)
+#define start_timing() ErlNifTime __start = enif_monotonic_time(ERL_NIF_USEC)
+#define elapsed_microseconds() (enif_monotonic_time(ERL_NIF_USEC) - __start)
+#else
+#define debug(...)
+#define error(...) do { enif_fprintf(stderr, __VA_ARGS__); enif_fprintf(stderr, "\n"); } while(0)
+#define start_timing()
+#define elapsed_microseconds() 0
+#endif
 
 // I2C NIF Resource.
 struct I2cNifRes {
@@ -40,7 +115,7 @@ static void i2c_dtor(ErlNifEnv *env, void *obj)
 
     debug("i2c_dtor");
     if (res->fd >= 0) {
-        hal_i2c_close(res->fd);
+        do_close(res->fd);
         res->fd = -1;
     }
 }
@@ -115,7 +190,9 @@ static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     if (!enif_inspect_binary(env, argv[0], &path))
         return enif_make_badarg(env);
 
-    int fd = hal_i2c_open(path.data, path.size);
+    char devpath[32];
+    snprintf(devpath, sizeof(devpath), "/dev/%.*s", (int) path.size, path.data);
+    int fd = do_open(devpath, O_RDWR);
     if (fd < 0)
         return enif_make_errno_error(env);
 
@@ -127,6 +204,23 @@ static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     enif_release_resource(i2c_nif_res);
 
     return enif_make_tuple2(env, atom_ok, res_term);
+}
+
+static int retry_rdwr_ioctl(int fd, struct i2c_rdwr_ioctl_data *data, int retries)
+{
+    int rc;
+
+    // Partial failures aren't supported. For example, if the RDWR has a write
+    // message and then a read and the read fails, the whole thing is retried.
+    //
+    // See https://elixir.bootlin.com/linux/v6.2/source/drivers/i2c/i2c-core-base.c#L2150
+    // for some commentary on the limitations of the Linux I2C API.
+
+    do {
+        rc = do_ioctl(fd, I2C_RDWR, data);
+    } while (rc < 0 && retries-- > 0);
+
+    return rc;
 }
 
 static ERL_NIF_TERM i2c_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
@@ -150,7 +244,18 @@ static ERL_NIF_TERM i2c_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     if (!raw_bin_read)
         return enif_make_tuple2(env, atom_error, enif_make_atom(env, "alloc_failed"));
 
-    if (hal_i2c_transfer(res->fd, addr, 0, 0, raw_bin_read, read_len, retries) >= 0)
+    struct i2c_rdwr_ioctl_data data;
+    struct i2c_msg msgs[1];
+
+    msgs[0].addr = addr;
+    msgs[0].flags = I2C_M_RD;
+    msgs[0].len = read_len;
+    msgs[0].buf = (uint8_t *) raw_bin_read;
+
+    data.msgs = &msgs[0];
+    data.nmsgs = 1;
+
+    if (retry_rdwr_ioctl(res->fd, &data, retries) >= 0)
         return enif_make_tuple2(env, atom_ok, bin_read);
     else
         return enif_make_errno_error(env);
@@ -170,7 +275,18 @@ static ERL_NIF_TERM i2c_write(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
         !enif_get_int(env, argv[3], &retries))
         return enif_make_badarg(env);
 
-    if (hal_i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, 0, 0, retries) >= 0)
+    struct i2c_rdwr_ioctl_data data;
+    struct i2c_msg msgs[1];
+
+    msgs[0].addr = addr;
+    msgs[0].flags = 0;
+    msgs[0].len = bin_write.size;
+    msgs[0].buf = (uint8_t *) bin_write.data;
+
+    data.msgs = &msgs[0];
+    data.nmsgs = 1;
+
+    if (retry_rdwr_ioctl(res->fd, &data, retries) >= 0)
         return atom_ok;
     else
         return enif_make_errno_error(env);
@@ -199,7 +315,22 @@ static ERL_NIF_TERM i2c_write_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM 
     if (!raw_bin_read)
         return enif_make_tuple2(env, atom_error, enif_make_atom(env, "alloc_failed"));
 
-    if (hal_i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, raw_bin_read, read_len, retries) >= 0)
+    struct i2c_rdwr_ioctl_data data;
+    struct i2c_msg msgs[2];
+
+    msgs[0].addr = addr;
+    msgs[0].flags = 0;
+    msgs[0].len = bin_write.size;
+    msgs[0].buf = (uint8_t *) bin_write.data;
+    msgs[1].addr = addr;
+    msgs[1].flags = I2C_M_RD;
+    msgs[1].len = read_len;
+    msgs[1].buf = (uint8_t *) raw_bin_read;
+
+    data.msgs = &msgs[0];
+    data.nmsgs = 2;
+
+    if (retry_rdwr_ioctl(res->fd, &data, retries) >= 0)
         return enif_make_tuple2(env, atom_ok, bin_read);
     else
         return enif_make_errno_error(env);
@@ -214,7 +345,7 @@ static ERL_NIF_TERM i2c_close(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
         return enif_make_badarg(env);
 
     if (res->fd >= 0) {
-        hal_i2c_close(res->fd);
+        do_close(res->fd);
         res->fd = -1;
     }
 
@@ -223,7 +354,9 @@ static ERL_NIF_TERM i2c_close(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
 
 static ERL_NIF_TERM i2c_info(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
-    return hal_info(env);
+    ERL_NIF_TERM info = enif_make_new_map(env);
+    enif_make_map_put(env, info, enif_make_atom(env, "name"), enif_make_atom(env, BACKEND_NAME), &info);
+    return info;
 }
 
 static ErlNifFunc nif_funcs[] =

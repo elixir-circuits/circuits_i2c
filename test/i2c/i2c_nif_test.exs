@@ -8,12 +8,6 @@ defmodule Circuits.I2CNifTest do
 
     assert is_map(info)
     assert info.name == :stub
-
-    # These should be 0, but sometimes there's a straggler that doesn't get
-    # garbage collected fast enough from another test. They definitely shouldn't
-    # be negative, though.
-    assert info.i2c_test_0_open >= 0
-    assert info.i2c_test_1_open >= 0
   end
 
   test "unloading NIF" do

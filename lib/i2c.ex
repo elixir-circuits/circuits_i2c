@@ -174,16 +174,16 @@ defmodule Circuits.I2C do
   ["i2c-1"]
   ```
   """
-  if Mix.env() != :test do
-    @spec bus_names() :: [binary()]
-    def bus_names() do
-      Path.wildcard("/dev/i2c-*")
-      |> Enum.map(fn p -> String.replace_prefix(p, "/dev/", "") end)
-    end
-  else
-    # Return a hardcoded set of I2C bus names for test purposes
-    def bus_names() do
-      ["i2c-test-0", "i2c-test-1"]
+  @spec bus_names() :: [binary()]
+  def bus_names() do
+    case Nif.info() do
+      %{name: :stub} ->
+        # Return a hardcoded set of I2C bus names for test purposes
+        ["i2c-test-0", "i2c-test-1"]
+
+      _ ->
+        Path.wildcard("/dev/i2c-*")
+        |> Enum.map(fn p -> String.replace_prefix(p, "/dev/", "") end)
     end
   end
 
