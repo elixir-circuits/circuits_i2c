@@ -137,10 +137,12 @@ static ERL_NIF_TERM i2c_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     unsigned long read_len;
     ERL_NIF_TERM bin_read;
     unsigned char *raw_bin_read;
+    int retries;
 
     if (!enif_get_resource(env, argv[0], priv->i2c_nif_res_type, (void **)&res) ||
         !enif_get_uint(env, argv[1], &addr) ||
-        !enif_get_ulong(env, argv[2], &read_len))
+        !enif_get_ulong(env, argv[2], &read_len) ||
+        !enif_get_int(env, argv[3], &retries))
         return enif_make_badarg(env);
 
     raw_bin_read = enif_make_new_binary(env, read_len, &bin_read);
@@ -148,7 +150,7 @@ static ERL_NIF_TERM i2c_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     if (!raw_bin_read)
         return enif_make_tuple2(env, atom_error, enif_make_atom(env, "alloc_failed"));
 
-    if (hal_i2c_transfer(res->fd, addr, 0, 0, raw_bin_read, read_len) >= 0)
+    if (hal_i2c_transfer(res->fd, addr, 0, 0, raw_bin_read, read_len, retries) >= 0)
         return enif_make_tuple2(env, atom_ok, bin_read);
     else
         return enif_make_errno_error(env);
@@ -160,13 +162,15 @@ static ERL_NIF_TERM i2c_write(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     struct I2cNifRes *res;
     unsigned int addr;
     ErlNifBinary bin_write;
+    int retries;
 
     if (!enif_get_resource(env, argv[0], priv->i2c_nif_res_type, (void **)&res) ||
         !enif_get_uint(env, argv[1], &addr) ||
-        !enif_inspect_iolist_as_binary(env, argv[2], &bin_write))
+        !enif_inspect_iolist_as_binary(env, argv[2], &bin_write) ||
+        !enif_get_int(env, argv[3], &retries))
         return enif_make_badarg(env);
 
-    if (hal_i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, 0, 0) >= 0)
+    if (hal_i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, 0, 0, retries) >= 0)
         return atom_ok;
     else
         return enif_make_errno_error(env);
@@ -181,11 +185,13 @@ static ERL_NIF_TERM i2c_write_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM 
     unsigned long read_len;
     ERL_NIF_TERM bin_read;
     unsigned char *raw_bin_read;
+    int retries;
 
     if (!enif_get_resource(env, argv[0], priv->i2c_nif_res_type, (void **)&res) ||
         !enif_get_uint(env, argv[1], &addr) ||
         !enif_inspect_iolist_as_binary(env, argv[2], &bin_write) ||
-        !enif_get_ulong(env, argv[3], &read_len))
+        !enif_get_ulong(env, argv[3], &read_len) ||
+        !enif_get_int(env, argv[4], &retries))
         return enif_make_badarg(env);
 
     raw_bin_read = enif_make_new_binary(env, read_len, &bin_read);
@@ -193,7 +199,7 @@ static ERL_NIF_TERM i2c_write_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM 
     if (!raw_bin_read)
         return enif_make_tuple2(env, atom_error, enif_make_atom(env, "alloc_failed"));
 
-    if (hal_i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, raw_bin_read, read_len) >= 0)
+    if (hal_i2c_transfer(res->fd, addr, bin_write.data, bin_write.size, raw_bin_read, read_len, retries) >= 0)
         return enif_make_tuple2(env, atom_ok, bin_read);
     else
         return enif_make_errno_error(env);
@@ -223,9 +229,9 @@ static ERL_NIF_TERM i2c_info(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
 static ErlNifFunc nif_funcs[] =
 {
     {"open", 1, i2c_open, ERL_NIF_DIRTY_JOB_IO_BOUND},
-    {"read", 3, i2c_read, ERL_NIF_DIRTY_JOB_IO_BOUND},
-    {"write", 3, i2c_write, ERL_NIF_DIRTY_JOB_IO_BOUND},
-    {"write_read", 4, i2c_write_read, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"read", 4, i2c_read, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"write", 4, i2c_write, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"write_read", 5, i2c_write_read, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"close", 1, i2c_close, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"info", 0, i2c_info, 0}
 };

@@ -63,8 +63,10 @@ void hal_i2c_close(int fd)
 int hal_i2c_transfer(int fd,
                      unsigned int addr,
                      const uint8_t *to_write, size_t to_write_len,
-                     uint8_t *to_read, size_t to_read_len)
+                     uint8_t *to_read, size_t to_read_len, int retries)
 {
+    (void) retries;
+
     debug("transfer fd=%d, addr=0x%0x", fd, addr);
     if (fd == I2C_TEST_0_FD && i2c_test_0_open_count > 0 && addr == 0x10) {
         // Address 0x10 exists on "i2c-test-0"

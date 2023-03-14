@@ -46,10 +46,27 @@ void hal_i2c_close(int fd)
     close(fd);
 }
 
+static int retry_rdwr_ioctl(int fd, struct i2c_rdwr_ioctl_data *data, int retries)
+{
+    int rc;
+
+    // Partial failures aren't supported. For example, if the RDWR has a write
+    // message and then a read and the read fails, the whole thing is retried.
+    //
+    // See https://elixir.bootlin.com/linux/v6.2/source/drivers/i2c/i2c-core-base.c#L2150
+    // for some commentary on the limitations of the Linux I2C API.
+
+    do {
+        rc = ioctl(fd, I2C_RDWR, data);
+    } while (rc < 0 && retries-- > 0);
+
+    return rc;
+}
+
 int hal_i2c_transfer(int fd,
                      unsigned int addr,
                      const uint8_t *to_write, size_t to_write_len,
-                     uint8_t *to_read, size_t to_read_len)
+                     uint8_t *to_read, size_t to_read_len, int retries)
 {
     struct i2c_rdwr_ioctl_data data;
     struct i2c_msg msgs[2];
@@ -71,6 +88,6 @@ int hal_i2c_transfer(int fd,
 
     data.nmsgs = (to_write_len != 0 && to_read_len != 0) ? 2 : 1;
 
-    return ioctl(fd, I2C_RDWR, &data);
+    return retry_rdwr_ioctl(fd, &data, retries);
 }
 

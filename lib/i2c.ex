@@ -35,6 +35,24 @@ defmodule Circuits.I2C do
 
   @type opt() :: {:retries, non_neg_integer()}
 
+  defmacrop unwrap_or_raise(call) do
+    quote do
+      case unquote(call) do
+        {:ok, value} -> value
+        {:error, reason} -> raise "I2C failure: " <> to_string(reason)
+      end
+    end
+  end
+
+  defmacrop unwrap_or_raise_ok(call) do
+    quote do
+      case unquote(call) do
+        :ok -> :ok
+        {:error, reason} -> raise "I2C failure: " <> to_string(reason)
+      end
+    end
+  end
+
   @doc """
   Open an I2C bus
 
@@ -65,7 +83,7 @@ defmodule Circuits.I2C do
   def read(i2c_bus, address, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
 
-    retry(fn -> Nif.read(i2c_bus, address, bytes_to_read) end, retries)
+    Nif.read(i2c_bus, address, bytes_to_read, retries)
   end
 
   @doc """
@@ -73,9 +91,7 @@ defmodule Circuits.I2C do
   """
   @spec read!(bus(), address(), pos_integer(), [opt()]) :: binary()
   def read!(i2c_bus, address, bytes_to_read, opts \\ []) do
-    retries = Keyword.get(opts, :retries, 0)
-
-    retry!(fn -> Nif.read(i2c_bus, address, bytes_to_read) end, retries)
+    unwrap_or_raise(read(i2c_bus, address, bytes_to_read, opts))
   end
 
   @doc """
@@ -89,7 +105,7 @@ defmodule Circuits.I2C do
   def write(i2c_bus, address, data, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
 
-    retry(fn -> Nif.write(i2c_bus, address, data) end, retries)
+    Nif.write(i2c_bus, address, data, retries)
   end
 
   @doc """
@@ -101,9 +117,7 @@ defmodule Circuits.I2C do
   """
   @spec write!(bus(), address(), iodata(), [opt()]) :: :ok
   def write!(i2c_bus, address, data, opts \\ []) do
-    retries = Keyword.get(opts, :retries, 0)
-
-    retry!(fn -> Nif.write(i2c_bus, address, data) end, retries)
+    unwrap_or_raise_ok(write(i2c_bus, address, data, opts))
   end
 
   @doc """
@@ -126,7 +140,7 @@ defmodule Circuits.I2C do
   def write_read(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
     retries = Keyword.get(opts, :retries, 0)
 
-    retry(fn -> Nif.write_read(i2c_bus, address, write_data, bytes_to_read) end, retries)
+    Nif.write_read(i2c_bus, address, write_data, bytes_to_read, retries)
   end
 
   @doc """
@@ -138,9 +152,7 @@ defmodule Circuits.I2C do
   """
   @spec write_read!(bus(), address(), iodata(), pos_integer(), [opt()]) :: binary()
   def write_read!(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
-    retries = Keyword.get(opts, :retries, 0)
-
-    retry!(fn -> Nif.write_read(i2c_bus, address, write_data, bytes_to_read) end, retries)
+    unwrap_or_raise(write_read(i2c_bus, address, write_data, bytes_to_read, opts))
   end
 
   @doc """
@@ -295,10 +307,7 @@ defmodule Circuits.I2C do
   """
   @spec discover_one!([address()], present?()) :: {binary(), address()}
   def discover_one!(possible_addresses, present? \\ &device_present?/2) do
-    case discover_one(possible_addresses, present?) do
-      {:ok, actual_device} -> actual_device
-      {:error, reason} -> raise "I2C discovery error: #{inspect(reason)}"
-    end
+    unwrap_or_raise(discover_one(possible_addresses, present?))
   end
 
   defp detect_and_print(bus_name, count) do
@@ -336,26 +345,4 @@ defmodule Circuits.I2C do
   """
   @spec info() :: map()
   defdelegate info(), to: Nif
-
-  defp retry!(fun, times) do
-    case retry(fun, times) do
-      {:error, reason} ->
-        raise "I2C failure: " <> to_string(reason)
-
-      :ok ->
-        :ok
-
-      {:ok, result} ->
-        result
-    end
-  end
-
-  defp retry(fun, 0), do: fun.()
-
-  defp retry(fun, times) when times > 0 do
-    case fun.() do
-      {:error, _reason} -> retry(fun, times - 1)
-      result -> result
-    end
-  end
 end

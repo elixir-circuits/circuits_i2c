@@ -13,15 +13,15 @@ defmodule Circuits.I2C.Nif do
     :erlang.nif_error(:nif_not_loaded)
   end
 
-  def read(_ref, _address, _count) do
+  def read(_ref, _address, _count, _retries) do
     :erlang.nif_error(:nif_not_loaded)
   end
 
-  def write(_ref, _address, _data) do
+  def write(_ref, _address, _data, _retries) do
     :erlang.nif_error(:nif_not_loaded)
   end
 
-  def write_read(_ref, _address, _write_data, _read_count) do
+  def write_read(_ref, _address, _write_data, _read_count, _retries) do
     :erlang.nif_error(:nif_not_loaded)
   end
 

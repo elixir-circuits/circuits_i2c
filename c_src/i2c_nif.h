@@ -61,12 +61,13 @@ void hal_i2c_close(int fd);
  * @param   to_write_len  Write buffer length
  * @param   to_read       Optional read buffer
  * @param   to_read_len   Read buffer length
+ * @param   retries       Number of retries if this fails
  *
  * @return  <0 for failure
  */
 int hal_i2c_transfer(int fd,
                      unsigned int addr,
                      const uint8_t *to_write, size_t to_write_len,
-                     uint8_t *to_read, size_t to_read_len);
+                     uint8_t *to_read, size_t to_read_len, int retries);
 
 #endif // I2C_NIF_H
