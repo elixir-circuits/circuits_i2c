@@ -4,11 +4,11 @@ defmodule Circuits.I2CNifTest do
   alias Circuits.I2C.Nif
 
   describe "info/0" do
-    test "info identifies as a stub and not a real i2c driver" do
+    test "info identifies as a i2c_dev_test and not a real i2c driver" do
       info = Nif.info()
 
       assert is_map(info)
-      assert info.name == :stub
+      assert info.name == :i2c_dev_test
     end
   end
 
@@ -47,6 +47,24 @@ defmodule Circuits.I2CNifTest do
       # in the C code.
       assert false == :code.purge(Circuits.I2C.Nif)
     end
+  end
+
+  test "setting backend to unknown value doesn't load the NIF" do
+    original_backend = Application.get_env(:circuits_i2c, :backend)
+
+    # Unload the current code if loaded
+    _ = :code.delete(Circuits.I2C.Nif)
+    _ = :code.purge(Circuits.I2C.Nif)
+
+    # Attempt loading. NIF shouldn't be loaded this time.
+    Application.put_env(:circuits_i2c, :backend, :other)
+    assert {:module, Circuits.I2C.Nif} == :code.ensure_loaded(Circuits.I2C.Nif)
+    assert_raise ErlangError, fn -> Circuits.I2C.info() end
+
+    # Cleanup
+    assert true == :code.delete(Circuits.I2C.Nif)
+    assert false == :code.purge(Circuits.I2C.Nif)
+    Application.put_env(:circuits_i2c, :backend, original_backend)
   end
 
   describe "read/4" do

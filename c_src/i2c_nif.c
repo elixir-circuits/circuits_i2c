@@ -29,13 +29,13 @@
 
 #include "linux/i2c-dev.h"
 
-#ifdef USE_STUB
-#define BACKEND_NAME "stub"
-#define do_open stub_open
-#define do_ioctl stub_ioctl
-#define do_close stub_close
+#ifdef TEST_BACKEND
+#define BACKEND_NAME "i2c_dev_test"
+#define do_open test_open
+#define do_ioctl test_ioctl
+#define do_close test_close
 
-int stub_open(const char *path, int flags)
+int test_open(const char *path, int flags)
 {
     if (strcmp(path, "/dev/i2c-test-0") == 0)
         return 0x10;
@@ -44,14 +44,14 @@ int stub_open(const char *path, int flags)
     else
         return -1;
 }
-int stub_close(int fd)
+int test_close(int fd)
 {
     if (fd == 0x10 || fd == 0x20)
         return 0;
     else
         return -1;
 }
-int stub_ioctl(int fd, unsigned long request, void *arg)
+int test_ioctl(int fd, unsigned long request, void *arg)
 {
     if (fd != 0x10 && fd != 0x20)
         return -1;

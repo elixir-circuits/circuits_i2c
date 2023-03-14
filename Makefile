@@ -8,7 +8,7 @@
 # Variables to override:
 #
 # MIX_APP_PATH  path to the build directory
-# MIX_ENV       Mix build environment - "test" forces use of the stub
+# CIRCUITS_BACKEND Backend to build - `"i2c_dev"` or `"i2c_dev_test"` will build a NIF
 #
 # CC            C compiler
 # CROSSCOMPILE	crosscompiler prefix, if any
@@ -36,7 +36,9 @@ ifeq ($(CROSSCOMPILE),)
 	else
 		CFLAGS += -Ic_src/compat
 		LDFLAGS += -undefined dynamic_lookup -dynamiclib
-		USE_STUB = yes
+		ifeq ($(CIRCUITS_BACKEND),i2c_dev)
+			$(error Circuits.I2C Linux i2c_dev backend not supported on non-Linux platforms. Review circuits_i2c backend configuration or report an issue if improperly detected.)
+		endif
 	endif
 else
 	# Crosscompiled build
@@ -44,13 +46,16 @@ else
 	CFLAGS += -fPIC
 endif
 
-# Force unit test version of NIF
-ifeq ($(MIX_ENV),test)
-	USE_STUB = yes
+ifeq ($(CIRCUITS_BACKEND),i2c_dev)
+# Build the Linux backend. This is default and works with Nerves
+else
+ifeq ($(CIRCUITS_BACKEND),i2c_dev_test)
+# Build the Linux backend, but stub out the real I2C calls
+CFLAGS += -DTEST_BACKEND
+else
+# Don't build NIF at all
+NIF =
 endif
-
-ifeq ($(USE_STUB),yes)
-	CFLAGS += -DUSE_STUB
 endif
 
 # Set Erlang-specific compile and linker flags

@@ -30,7 +30,7 @@ defmodule Circuits.I2CTest do
     assert {:error, :bus_not_found} == I2C.open("bad-i2c-bus")
   end
 
-  test "detects stub devices" do
+  test "detects i2c_dev_test I2C devices" do
     # See hal_stub.c for fake devices
     assert [0x10] == I2C.detect_devices("i2c-test-0")
     assert [0x20] == I2C.detect_devices("i2c-test-1")
@@ -53,7 +53,7 @@ defmodule Circuits.I2CTest do
   test "discover/2" do
     ids = [0x10, 0x20]
 
-    # Device 0x10 returns 0 and device 0x20 returns 0xff from the stub
+    # Device 0x10 returns 0 and device 0x20 returns 0xff from the i2c_dev_test backend
     assert [{"i2c-test-0", 0x10}] == I2C.discover(ids, &i2c_returns(&1, &2, <<0x10>>))
     assert [{"i2c-test-1", 0x20}] == I2C.discover(ids, &i2c_returns(&1, &2, <<0x20>>))
   end

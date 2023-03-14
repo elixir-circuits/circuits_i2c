@@ -174,17 +174,22 @@ defmodule Circuits.I2C do
   ["i2c-1"]
   ```
   """
-  @spec bus_names() :: [binary()]
-  def bus_names() do
-    case Nif.info() do
-      %{name: :stub} ->
-        # Return a hardcoded set of I2C bus names for test purposes
-        ["i2c-test-0", "i2c-test-1"]
+  # NOTODO: Temporary implementation
+  case System.get_env("CIRCUITS_BACKEND") do
+    "i2c_dev_test" ->
+      @spec bus_names() :: [<<_::80>>, ...]
+      def bus_names(), do: ["i2c-test-0", "i2c-test-1"]
 
-      _ ->
+    "i2c_dev" ->
+      @spec bus_names() :: [binary()]
+      def bus_names() do
         Path.wildcard("/dev/i2c-*")
         |> Enum.map(fn p -> String.replace_prefix(p, "/dev/", "") end)
-    end
+      end
+
+    _other ->
+      @spec bus_names() :: []
+      def bus_names(), do: []
   end
 
   @doc """
