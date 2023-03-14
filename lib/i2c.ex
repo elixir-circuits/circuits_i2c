@@ -59,7 +59,7 @@ defmodule Circuits.I2C do
 
   Options:
 
-  * :retries - number of retries before failing (defaults to no retries)
+  * `:retries` - number of retries before failing (defaults to no retries)
   """
   @spec read(bus(), address(), pos_integer(), [opt()]) :: {:ok, binary()} | {:error, term()}
   def read(i2c_bus, address, bytes_to_read, opts \\ []) do
@@ -83,7 +83,7 @@ defmodule Circuits.I2C do
 
   Options:
 
-  * :retries - number of retries before failing (defaults to no retries)
+  * `:retries` - number of retries before failing (defaults to no retries)
   """
   @spec write(bus(), address(), iodata(), [opt()]) :: :ok | {:error, term()}
   def write(i2c_bus, address, data, opts \\ []) do
@@ -98,7 +98,7 @@ defmodule Circuits.I2C do
 
   Options:
 
-  * :retries - number of retries before failing (defaults to no retries)
+  * `:retries` - number of retries before failing (defaults to no retries)
   """
   @spec write!(bus(), address(), iodata(), [opt()]) :: :ok
   def write!(i2c_bus, address, data, opts \\ []) do
@@ -121,7 +121,7 @@ defmodule Circuits.I2C do
 
   Options:
 
-  * :retries - number of retries before failing (defaults to no retries)
+  * `:retries` - number of retries before failing (defaults to no retries)
   """
   @spec write_read(bus(), address(), iodata(), pos_integer(), [opt()]) ::
           {:ok, binary()} | {:error, term()}
@@ -137,7 +137,7 @@ defmodule Circuits.I2C do
 
   Options:
 
-  * :retries - number of retries before failing (defaults to no retries)
+  * `:retries` - number of retries before failing (defaults to no retries)
   """
   @spec write_read!(bus(), address(), iodata(), pos_integer(), [opt()]) :: binary()
   def write_read!(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
