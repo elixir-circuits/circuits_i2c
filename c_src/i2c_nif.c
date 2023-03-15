@@ -41,19 +41,27 @@ int test_open(const char *path, int flags)
         return 0x10;
     else if (strcmp(path, "/dev/i2c-test-1") == 0)
         return 0x20;
+    else if (strcmp(path, "/dev/i2c-flaky") == 0)
+        return 0x30;
     else
         return -1;
 }
 int test_close(int fd)
 {
-    if (fd == 0x10 || fd == 0x20)
+    if (fd == 0x10 || fd == 0x20 || fd == 0x30)
         return 0;
     else
         return -1;
 }
 int test_ioctl(int fd, unsigned long request, void *arg)
 {
-    if (fd != 0x10 && fd != 0x20)
+    static int flaky = 0;
+
+    // The flaky I2C bus (0x30) works only on a retry. Reading anything besides 0x30 resets the counter.
+    if (fd != 0x30)
+        flaky = 0;
+
+    if (fd != 0x10 && fd != 0x20 && fd != 0x30)
         return -1;
 
     if (request == I2C_FUNCS) {
@@ -62,6 +70,15 @@ int test_ioctl(int fd, unsigned long request, void *arg)
         return 0;
     } else if (request == I2C_RDWR) {
         struct i2c_rdwr_ioctl_data *data = (struct i2c_rdwr_ioctl_data *) arg;
+
+        if (fd == 0x30) {
+            // Flake out if first read or write
+            if (flaky == 0) {
+                flaky++;
+                return -1;
+            }
+            flaky = 0;
+        }
 
         for (unsigned int i = 0; i < data->nmsgs; i++) {
             struct i2c_msg *msg = &data->msgs[i];

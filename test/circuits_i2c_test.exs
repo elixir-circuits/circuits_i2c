@@ -14,6 +14,7 @@ defmodule Circuits.I2CTest do
     assert is_list(names)
     assert "i2c-test-0" in names
     assert "i2c-test-1" in names
+    assert "i2c-flaky" in names
   end
 
   test "can open all buses" do

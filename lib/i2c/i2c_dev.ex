@@ -16,7 +16,7 @@ defmodule Circuits.I2C.I2CDev do
   case System.get_env("CIRCUITS_BACKEND") do
     "i2c_dev_test" ->
       @spec bus_names() :: [<<_::80>>, ...]
-      def bus_names(), do: ["i2c-test-0", "i2c-test-1"]
+      def bus_names(), do: ["i2c-test-0", "i2c-test-1", "i2c-flaky"]
 
     "i2c_dev" ->
       @spec bus_names() :: [binary()]
