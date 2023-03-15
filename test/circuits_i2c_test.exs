@@ -16,14 +16,12 @@ defmodule Circuits.I2CTest do
     assert "i2c-test-1" in names
   end
 
-  test "can open buses" do
-    {:ok, i2c} = I2C.open("i2c-test-0")
-    assert is_reference(i2c)
-    I2C.close(i2c)
-
-    {:ok, i2c} = I2C.open("i2c-test-1")
-    assert is_reference(i2c)
-    I2C.close(i2c)
+  test "can open all buses" do
+    for bus_name <- I2C.bus_names() do
+      {:ok, i2c} = I2C.open(bus_name)
+      assert %Circuits.I2C.I2CDev{} = i2c
+      I2C.close(i2c)
+    end
   end
 
   test "error when opening unknown bus" do
