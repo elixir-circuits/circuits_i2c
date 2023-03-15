@@ -1,4 +1,26 @@
-# Porting Elixir/ALE to Circuits.I2C
+# Porting
+
+## Upgrading Circuits.I2C 1.0 projects to 2.0
+
+Circuits.I2C 2.0 supports alternative I2C hardware and the ability to mock or
+emulate devices via backends. The Linux i2c-dev backend is the
+default and this matches Circuits.I2C 1.0. Most projects won't need any changes
+other than to update the dependency in `mix.exs`. If upgrading a library, The
+following dependency specification is recommended to allow both `circuits_i2c`
+versions:
+
+```elixir
+   {:circuits_i2c, "~> 2.0 or ~> 1.0"}
+```
+
+The following potentially breaking changes were made:
+
+1. `Circuits.I2C.open/1` no longer accepts Erlang strings.
+2. The `stub` implementation has been renamed to `i2c_dev_test`. If using the
+   stub implementation for testing, you may have to update your tests since
+   there were minor changes.
+
+## Upgrading Elixir/ALE projects to Circuits.I2C
 
 The `Circuits.I2C` package is the next version of Elixir/ALE's I2C support.
 If you're currently using Elixir/ALE, you're encouraged to switch. Here are some
@@ -13,7 +35,7 @@ benefits:
 to crash the Erlang VM. Experience with Elixir/ALE has given many of us
 confidence that this won't be a problem.
 
-## Code modifications
+### Code modifications
 
 `Circuits.I2C` is not a `GenServer`, so if you've added `ElixirALE.I2C` to a
 supervision tree, you'll have to take it out and manually call

@@ -1,4 +1,4 @@
-# Elixir Circuits - I2C
+# Circuits.I2C
 
 [![Hex version](https://img.shields.io/hexpm/v/circuits_i2c.svg "Hex version")](https://hex.pm/packages/circuits_i2c)
 [![API docs](https://img.shields.io/hexpm/v/circuits_i2c.svg?label=hexdocs "API docs")](https://hexdocs.pm/circuits_i2c/Circuits.I2C.html)
@@ -7,26 +7,32 @@
 `Circuits.I2C` lets you communicate with hardware devices using the I2C
 protocol.
 
-If you're coming from Elixir/ALE, check out our [porting guide](PORTING.md).
+If you're coming from Circuits 1.0 or Elixir/ALE, check out our [porting guide](PORTING.md).
 
 ## Getting started
 
-If you're using Nerves or compiling on a Raspberry Pi or other device with I2C
-support, then add `circuits_i2c` like any other Elixir library:
+By default, `Circuits.I2C` supports the Linux-based I2C driver interface so the
+following instructions assume a Linux-based system like Nerves, Raspberry Pi
+OS, embedded Linux or even desktop Linux if I2C lines are exposed. If you want
+to use `Circuits.I2C` on a different platform and support is availabe, generally
+the only difference is to change the "open" call. The rest is the same.
+
+First off, add `circuits_i2c` to your `mix.exs`'s dependency list like any other
+Elixir library:
 
 ```elixir
 def deps do
-  [{:circuits_i2c, "~> 1.0"}]
+  [{:circuits_i2c, "~> 2.0"}]
 end
 ```
 
 `Circuits.I2C` doesn't load device drivers, so you may need to load them
 beforehand. If you are using Nerves on a supported platform, this is enabled for
-you already. If using Raspbian, the [Adafruit Raspberry Pi I2C
+you already. If using Raspberry Pi OS, the [Adafruit Raspberry Pi I2C
 instructions](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c)
 may be helpful.
 
-Internally, it uses the [Linux "i2cdev"
+Internally, it uses the [Linux "i2c-dev"
 interface](https://elixir.bootlin.com/linux/latest/source/Documentation/i2c/dev-interface)
 so that it does not require board-dependent code.
 
@@ -80,6 +86,22 @@ iex> I2C.write_read(ref, 0x20, <<0>>, 11)
 iex> I2C.write_read(ref, 0x20, <<9>>, 1)
 {:ok, <<17>>}
 ```
+
+## Creating a new backend
+
+`Circuits.I2C` supports alternative backends to support non-Linux hardware, testing, and simulation. Here's the general idea:
+
+1. Create a new module that implements the `Circuits.I2C.Backend` protocol.
+2. Add an `open/2` function where the first parameter
+   represents a I2C bus name or whatever makes sense for your backend. The
+   second parameter should be an option list. `open/2` should return
+   `{:ok, struct}` where `struct` is your backend.
+3. Add an `info/0` function that returns a map of debug information. This
+   is optional.
+4. Add a `bus_names/0` function that scans the system and returns a list of
+   bus names for `open/2` calls. This is used for device discovery.
+
+Add more...
 
 ## FAQ
 
