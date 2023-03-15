@@ -134,7 +134,7 @@ Other things to check:
   you need to read a particular register? Is there a mode that the device can be
   put it so that it only returns useful data?
 * Can a write and read be combined? The `Circuits.I2C.write_read` function is
-  more efficent than a separate write followed by a read.
+  more efficient than a separate write followed by a read.
 * Does the device support a queue mode? Some devices have internal queues that
   allow the host to copy out more than one sample each time.
 
