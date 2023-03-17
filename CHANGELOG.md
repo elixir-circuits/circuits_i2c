@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.2.0 - 2023-03-17
+
+* Changes
+  * Improve device detection by using 0-byte writes on some I2C addresses and
+    1-byte reads on others. This matches the i2c-tools heuristic and detects at
+    least on more device that wasn't detected before.
+  * Simplified NIF by deleting a lot of flexibility that didn't end up being
+    useful. Also moved functionality around so that it could be implemented more
+    simply.
+
 ## v1.1.0 - 2022-11-16
 
 * Changes
