@@ -331,11 +331,12 @@ defmodule Circuits.I2C do
   some devices to actually do something.
   """
   @spec device_present?(bus(), address()) :: boolean()
+  def device_present?(i2c, address) when address in 0x30..0x37 or address in 0x50..0x5F do
+    match?({:ok, _}, read(i2c, address, 1))
+  end
+
   def device_present?(i2c, address) do
-    case read(i2c, address, 1) do
-      {:ok, _} -> true
-      _ -> false
-    end
+    :ok == write(i2c, address, <<>>)
   end
 
   @doc """
