@@ -4,8 +4,9 @@ defmodule Circuits.I2C.I2CDev do
 
   This backend works on Nerves, embedded Linux, and desktop Linux.
   """
+  @behaviour Circuits.I2C.Backend
 
-  alias Circuits.I2C.Backend
+  alias Circuits.I2C.Bus
   alias Circuits.I2C.Nif
 
   defstruct [:ref, :retries]
@@ -57,22 +58,22 @@ defmodule Circuits.I2C.I2CDev do
     |> Map.put(:backend, __MODULE__)
   end
 
-  defimpl Backend do
-    @impl Backend
+  defimpl Bus do
+    @impl Bus
     def read(%Circuits.I2C.I2CDev{ref: ref, retries: retries}, address, count, options) do
       retries = Keyword.get(options, :retries, retries)
 
       Nif.read(ref, address, count, retries)
     end
 
-    @impl Backend
+    @impl Bus
     def write(%Circuits.I2C.I2CDev{ref: ref, retries: retries}, address, data, options) do
       retries = Keyword.get(options, :retries, retries)
 
       Nif.write(ref, address, data, retries)
     end
 
-    @impl Backend
+    @impl Bus
     def write_read(
           %Circuits.I2C.I2CDev{ref: ref, retries: retries},
           address,
@@ -85,7 +86,7 @@ defmodule Circuits.I2C.I2CDev do
       Nif.write_read(ref, address, write_data, read_count, retries)
     end
 
-    @impl Backend
+    @impl Bus
     def close(%Circuits.I2C.I2CDev{ref: ref}) do
       Nif.close(ref)
     end

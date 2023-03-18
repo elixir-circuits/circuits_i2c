@@ -2,6 +2,7 @@ defmodule Circuits.I2C.NilBackend do
   @moduledoc """
   Circuits.I2C backend when nothing else is available
   """
+  @behaviour Circuits.I2C.Backend
 
   @doc """
   Return the I2C bus names on this system

@@ -1,4 +1,4 @@
-defprotocol Circuits.I2C.Backend do
+defmodule Circuits.I2C.Backend do
   @moduledoc """
   Backends provide the connection to the real or virtual I2C controller
   """
@@ -14,45 +14,31 @@ defprotocol Circuits.I2C.Backend do
   """
   @type options() :: keyword()
 
-  @doc """
-  Read data over I2C
-
-  The controller should try to read the specified number of bytes over I2C.
-  If the retry option is passed and non-zero, the transaction only needs to
-  be retried if there's an error. This means that fewer that the requested
-  number of bytes may be returned.
-  """
-  @spec read(t(), Circuits.I2C.address(), non_neg_integer(), options()) ::
-          {:ok, binary()} | {:error, term()}
-  def read(backend, address, count, options)
+  alias Circuits.I2C.Bus
 
   @doc """
-  Write data over I2C
+  Return the I2C bus names on this system
 
-  The controller should write the passed in data to the specified I2C address.
+  No supported options
   """
-  @spec write(t(), Circuits.I2C.address(), iodata(), options()) :: :ok | {:error, term()}
-  def write(backend, address, data, options)
+  @callback bus_names(options :: keyword()) :: [binary()]
 
   @doc """
-  Write data and read a result in one I2C transaction
+  Open an I2C bus
 
-  This function handles the common task of writing a register number
-  to a device and then reading its contents. The controller should perform it
-  as one transaction without a stop condition between the write and read.
+  Bus names are typically of the form `"i2c-n"` and available buses may be
+  found by calling `Circuits.I2C.I2CDev.bus_names/0`.
+
+  Options:
+
+  * `:retries` - Specify a nonnegative integer for how many times to retry
+    a failed I2C operation.
   """
-  @spec write_read(t(), Circuits.I2C.address(), iodata(), non_neg_integer(), options()) ::
-          {:ok, binary()} | {:error, term()}
-  def write_read(backend, address, write_data, read_count, options)
+  @callback open(bus_name :: String.t(), options :: keyword()) ::
+              {:ok, Bus.t()} | {:error, term()}
 
   @doc """
-  Free up resources associated with the backend
-
-  Well behaved backends should free up their resources when the backend is no longer
-  referenced by triggering off of Erlang's garbage collector. However, it is good
-  practice for users to call `Circuits.I2C.close/1` (and hence this function) so that
-  limited resources are freed before they're needed again.
+  Return information about this backend
   """
-  @spec close(t()) :: :ok
-  def close(backend)
+  @callback info() :: map()
 end
