@@ -344,7 +344,7 @@ defmodule Circuits.I2C do
 
   defp default_backend() do
     case Application.get_env(:circuits_i2c, :default_backend) do
-      nil -> {:todo, []}
+      nil -> {Circuits.I2C.NilBackend, []}
       m when is_atom(m) -> {m, []}
       {m, o} = value when is_atom(m) and is_list(o) -> value
     end
