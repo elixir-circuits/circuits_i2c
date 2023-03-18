@@ -8,7 +8,7 @@ defmodule Circuits.I2CNifTest do
       info = Nif.info()
 
       assert is_map(info)
-      assert info.name == :i2c_dev_test
+      assert info.test?
     end
   end
 
@@ -50,21 +50,21 @@ defmodule Circuits.I2CNifTest do
   end
 
   test "setting backend to unknown value doesn't load the NIF" do
-    original_backend = Application.get_env(:circuits_i2c, :backend)
+    original_backend = Application.get_env(:circuits_i2c, :default_backend)
 
     # Unload the current code if loaded
     _ = :code.delete(Circuits.I2C.Nif)
     _ = :code.purge(Circuits.I2C.Nif)
 
     # Attempt loading. NIF shouldn't be loaded this time.
-    Application.put_env(:circuits_i2c, :backend, :other)
+    Application.put_env(:circuits_i2c, :default_backend, Some.Other.Backend)
     assert {:module, Circuits.I2C.Nif} == :code.ensure_loaded(Circuits.I2C.Nif)
-    assert_raise ErlangError, fn -> Circuits.I2C.info() end
+    assert_raise UndefinedFunctionError, fn -> Circuits.I2C.info() end
 
     # Cleanup
     assert true == :code.delete(Circuits.I2C.Nif)
     assert false == :code.purge(Circuits.I2C.Nif)
-    Application.put_env(:circuits_i2c, :backend, original_backend)
+    Application.put_env(:circuits_i2c, :default_backend, original_backend)
   end
 
   describe "load tests" do

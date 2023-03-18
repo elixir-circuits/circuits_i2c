@@ -9,7 +9,7 @@ defmodule Circuits.I2CDevTest do
       info = I2CDev.info()
 
       assert is_map(info)
-      assert info.name == :i2c_dev_test
+      assert info.backend == Circuits.I2C.I2CDev
     end
   end
 

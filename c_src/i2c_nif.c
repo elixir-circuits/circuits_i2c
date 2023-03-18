@@ -30,7 +30,6 @@
 #include "linux/i2c-dev.h"
 
 #ifdef TEST_BACKEND
-#define BACKEND_NAME "i2c_dev_test"
 #define do_open test_open
 #define do_ioctl test_ioctl
 #define do_close test_close
@@ -98,7 +97,6 @@ int test_ioctl(int fd, unsigned long request, void *arg)
     }
 }
 #else
-#define BACKEND_NAME "i2c_dev"
 #define do_open open
 #define do_ioctl ioctl
 #define do_close close
@@ -411,7 +409,9 @@ static ERL_NIF_TERM i2c_close(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
 static ERL_NIF_TERM i2c_info(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
     ERL_NIF_TERM info = enif_make_new_map(env);
-    enif_make_map_put(env, info, enif_make_atom(env, "name"), enif_make_atom(env, BACKEND_NAME), &info);
+#ifdef TEST_BACKEND
+    enif_make_map_put(env, info, enif_make_atom(env, "test?"), enif_make_atom(env, "true"), &info);
+#endif
     return info;
 }
 

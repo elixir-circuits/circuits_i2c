@@ -5,8 +5,6 @@ defmodule Circuits.I2C do
   """
   alias Circuits.I2C.Backend
 
-  @default_backend Circuits.I2C.I2CDev
-
   # Public API
 
   @typedoc """
@@ -69,7 +67,8 @@ defmodule Circuits.I2C do
   """
   @spec open(String.t(), keyword()) :: {:ok, Backend.t()} | {:error, term()}
   def open(bus_name, options \\ []) when is_binary(bus_name) do
-    @default_backend.open(bus_name, options)
+    {module, default_options} = default_backend()
+    module.open(bus_name, Keyword.merge(default_options, options))
   end
 
   @doc """
@@ -170,7 +169,8 @@ defmodule Circuits.I2C do
   """
   @spec bus_names() :: [String.t()]
   def bus_names() do
-    @default_backend.bus_names()
+    {m, o} = default_backend()
+    m.bus_names(o)
   end
 
   @doc """
@@ -252,7 +252,9 @@ defmodule Circuits.I2C do
 
   @spec discover(binary(), [address()], present?()) :: [{binary(), address()}]
   defp discover(bus_name, possible_addresses, present?) when is_binary(bus_name) do
-    case @default_backend.open(bus_name, []) do
+    {module, options} = default_backend()
+
+    case module.open(bus_name, options) do
       {:ok, backend} ->
         result =
           possible_addresses
@@ -335,11 +337,16 @@ defmodule Circuits.I2C do
   This may be helpful when debugging I2C issues.
   """
   @spec info(Backend.t()) :: map()
-  def info(backend \\ nil) do
-    if backend do
-      backend.__struct__.info()
-    else
-      @default_backend.info()
+  def info(backend \\ nil)
+
+  def info(nil), do: info(default_backend())
+  def info({backend, _options}), do: backend.__struct__.info()
+
+  defp default_backend() do
+    case Application.get_env(:circuits_i2c, :default_backend) do
+      nil -> {:todo, []}
+      m when is_atom(m) -> {m, []}
+      {m, o} = value when is_atom(m) and is_list(o) -> value
     end
   end
 end

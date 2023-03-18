@@ -12,15 +12,17 @@ defmodule Circuits.I2C.I2CDev do
 
   @doc """
   Return the I2C bus names on this system
-  """
-  case System.get_env("CIRCUITS_BACKEND") do
-    "i2c_dev_test" ->
-      @spec bus_names() :: [<<_::80>>, ...]
-      def bus_names(), do: ["i2c-test-0", "i2c-test-1", "i2c-flaky"]
 
-    "i2c_dev" ->
-      @spec bus_names() :: [binary()]
-      def bus_names() do
+  No supported options
+  """
+  case System.get_env("CIRCUITS_I2C_I2CDEV") do
+    "test" ->
+      @spec bus_names(keyword()) :: [<<_::80>>, ...]
+      def bus_names(_options \\ []), do: ["i2c-test-0", "i2c-test-1", "i2c-flaky"]
+
+    "normal" ->
+      @spec bus_names(keyword()) :: [binary()]
+      def bus_names(_options \\ []) do
         Path.wildcard("/dev/i2c-*")
         |> Enum.map(fn p -> String.replace_prefix(p, "/dev/", "") end)
       end
@@ -50,7 +52,10 @@ defmodule Circuits.I2C.I2CDev do
   Return information about this backend
   """
   @spec info() :: map()
-  defdelegate info(), to: Nif
+  def info() do
+    Nif.info()
+    |> Map.put(:backend, __MODULE__)
+  end
 
   defimpl Backend do
     @impl Backend

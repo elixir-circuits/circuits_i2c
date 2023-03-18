@@ -8,7 +8,7 @@
 # Variables to override:
 #
 # MIX_APP_PATH  path to the build directory
-# CIRCUITS_BACKEND Backend to build - `"i2c_dev"` or `"i2c_dev_test"` will build a NIF
+# CIRCUITS_I2C_I2CDEV Backend to build - `"normal"`, `"test"`, or `"disabled"` will build a NIF
 #
 # CC            C compiler
 # CROSSCOMPILE	crosscompiler prefix, if any
@@ -29,31 +29,31 @@ CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 
 # Check that we're on a supported build platform
 ifeq ($(CROSSCOMPILE),)
-	# Not crosscompiling, so check that we're on Linux for whether to compile the NIF.
-	ifeq ($(shell uname -s),Linux)
-		CFLAGS += -fPIC
-		LDFLAGS += -fPIC -shared
-	else
-		CFLAGS += -Ic_src/compat
-		LDFLAGS += -undefined dynamic_lookup -dynamiclib
-		ifeq ($(CIRCUITS_BACKEND),i2c_dev)
-			$(error Circuits.I2C Linux i2c_dev backend not supported on non-Linux platforms. Review circuits_i2c backend configuration or report an issue if improperly detected.)
-		endif
-	endif
+# Not crosscompiling, so check that we're on Linux for whether to compile the NIF.
+ifeq ($(shell uname -s),Linux)
+CFLAGS += -fPIC
+LDFLAGS += -fPIC -shared
 else
-	# Crosscompiled build
-	LDFLAGS += -fPIC -shared
-	CFLAGS += -fPIC
+CFLAGS += -Ic_src/compat
+LDFLAGS += -undefined dynamic_lookup -dynamiclib
+ifeq ($(CIRCUITS_I2C_I2CDEV),normal)
+$(error Circuits.I2C Linux I2CDev backend is not supported on non-Linux platforms. Review circuits_i2c backend configuration or report an issue if improperly detected.)
+endif
+endif
+else
+# Crosscompiled build
+LDFLAGS += -fPIC -shared
+CFLAGS += -fPIC
 endif
 
-ifeq ($(CIRCUITS_BACKEND),i2c_dev)
-# Build the Linux backend. This is default and works with Nerves
+ifeq ($(CIRCUITS_I2C_I2CDEV),normal)
+# Enable real I2C calls. This is the default and works with Nerves
 else
-ifeq ($(CIRCUITS_BACKEND),i2c_dev_test)
-# Build the Linux backend, but stub out the real I2C calls
+ifeq ($(CIRCUITS_I2C_I2CDEV),test)
+# Stub out ioctls and send back test data
 CFLAGS += -DTEST_BACKEND
 else
-# Don't build NIF at all
+# Don't build NIF
 NIF =
 endif
 endif

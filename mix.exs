@@ -34,9 +34,9 @@ defmodule Circuits.I2C.MixProject do
   def application do
     # IMPORTANT: This provides a default at runtime and at compile-time when
     # circuits_i2c is pulled in as a dependency. It is not available at compile-time
-    # when using circuits_i2c directly nor in Makefiles. See the CIRCUITS_BACKEND
+    # when using circuits_i2c directly nor in Makefiles. See the CIRCUITS_I2C_I2CDEV
     # OS environment variable.
-    [env: [backend: default_backend()]]
+    [env: [default_backend: default_backend()]]
   end
 
   defp package do
@@ -77,25 +77,41 @@ defmodule Circuits.I2C.MixProject do
   end
 
   defp default_backend(), do: default_backend(Mix.env(), Mix.target())
-  defp default_backend(:test, _target), do: :i2c_dev_test
+  defp default_backend(:test, _target), do: {Circuits.I2C.I2CDev, test: true}
 
   defp default_backend(_env, :host) do
     case :os.type() do
-      {:unix, :i2c_dev} -> :i2c_dev
-      _ -> :i2c_dev_test
+      {:unix, :linux} -> Circuits.I2C.I2CDev
+      _ -> {Circuits.I2C.I2CDev, test: true}
     end
   end
 
   # Assume Nerves for a default
-  defp default_backend(_env, _not_host), do: :i2c_dev
+  defp default_backend(_env, _not_host), do: Circuits.I2C.I2CDev
 
   defp set_make_env(_args) do
     # Since user configuration hasn't been loaded into the application
     # environment when `project/1` is called, load it here for building
     # the NIF.
-    backend = Application.get_env(:circuits_i2c, :backend, default_backend())
+    backend = Application.get_env(:circuits_i2c, :default_backend, default_backend())
 
-    System.put_env("CIRCUITS_BACKEND", to_string(backend))
+    System.put_env("CIRCUITS_I2C_I2CDEV", i2c_dev_compile_mode(backend))
+  end
+
+  defp i2c_dev_compile_mode({Circuits.I2C.I2CDev, options}) do
+    if Keyword.get(options, :test) do
+      "test"
+    else
+      "normal"
+    end
+  end
+
+  defp i2c_dev_compile_mode(Circuits.I2C.I2CDev) do
+    "normal"
+  end
+
+  defp i2c_dev_compile_mode(_other) do
+    "disabled"
   end
 
   defp format_c([]) do
