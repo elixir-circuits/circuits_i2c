@@ -2,6 +2,7 @@ defmodule Circuits.I2C.Backend do
   @moduledoc """
   Backends provide the connection to the real or virtual I2C controller
   """
+  alias Circuits.I2C.Bus
 
   @typedoc """
   I2C transfer options
@@ -13,8 +14,6 @@ defmodule Circuits.I2C.Backend do
     before failing
   """
   @type options() :: keyword()
-
-  alias Circuits.I2C.Bus
 
   @doc """
   Return the I2C bus names on this system

@@ -14,6 +14,7 @@ defmodule Circuits.I2C.MixProject do
       package: package(),
       source_url: @source_url,
       compilers: [:elixir_make | Mix.compilers()],
+      elixirc_paths: elixirc_paths(Mix.env()),
       make_targets: ["all"],
       make_clean: ["clean"],
       docs: docs(),
@@ -31,11 +32,12 @@ defmodule Circuits.I2C.MixProject do
     ]
   end
 
+  defp elixirc_paths(env) when env in [:test, :dev], do: ["lib", "examples"]
+  defp elixirc_paths(_env), do: ["lib"]
+
   def application do
     # IMPORTANT: This provides a default at runtime and at compile-time when
-    # circuits_i2c is pulled in as a dependency. It is not available at compile-time
-    # when using circuits_i2c directly nor in Makefiles. See the CIRCUITS_I2C_I2CDEV
-    # OS environment variable.
+    # circuits_i2c is pulled in as a dependency.
     [env: [default_backend: default_backend()]]
   end
 

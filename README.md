@@ -89,19 +89,10 @@ iex> I2C.write_read(ref, 0x20, <<9>>, 1)
 
 ## Creating a new backend
 
-`Circuits.I2C` supports alternative backends to support non-Linux hardware, testing, and simulation. Here's the general idea:
+`Circuits.I2C` supports alternative backends to support non-Linux hardware, testing, and simulation. A backend can support communication on more than one I2C bus.
 
-1. Create a new module that implements the `Circuits.I2C.Backend` protocol.
-2. Add an `open/2` function where the first parameter
-   represents a I2C bus name or whatever makes sense for your backend. The
-   second parameter should be an option list. `open/2` should return
-   `{:ok, struct}` where `struct` is your backend.
-3. Add an `info/0` function that returns a map of debug information. This
-   is optional.
-4. Add a `bus_names/0` function that scans the system and returns a list of
-   bus names for `open/2` calls. This is used for device discovery.
-
-Add more...
+To create a new backend, you need to implement the `Circuits.I2C.Backend` behaviour. `Circuits.I2C` calls the `bus_names/1` callback to discover what
+I2C buses are available and then it calls the `open/2` callback to use the I2C bus.
 
 ## FAQ
 

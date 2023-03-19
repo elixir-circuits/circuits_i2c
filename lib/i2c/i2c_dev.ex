@@ -6,6 +6,7 @@ defmodule Circuits.I2C.I2CDev do
   """
   @behaviour Circuits.I2C.Backend
 
+  alias Circuits.I2C.Backend
   alias Circuits.I2C.Bus
   alias Circuits.I2C.Nif
 
@@ -18,12 +19,12 @@ defmodule Circuits.I2C.I2CDev do
   """
   case System.get_env("CIRCUITS_I2C_I2CDEV") do
     "test" ->
-      @spec bus_names(keyword()) :: [<<_::80>>, ...]
-      def bus_names(_options \\ []), do: ["i2c-test-0", "i2c-test-1", "i2c-flaky"]
+      @impl Backend
+      def bus_names(_options), do: ["i2c-test-0", "i2c-test-1", "i2c-flaky"]
 
     "normal" ->
-      @spec bus_names(keyword()) :: [binary()]
-      def bus_names(_options \\ []) do
+      @impl Backend
+      def bus_names(_options) do
         Path.wildcard("/dev/i2c-*")
         |> Enum.map(fn p -> String.replace_prefix(p, "/dev/", "") end)
       end
@@ -40,8 +41,8 @@ defmodule Circuits.I2C.I2CDev do
   * `:retries` - Specify a nonnegative integer for how many times to retry
     a failed I2C operation.
   """
-  @spec open(String.t(), keyword()) :: {:ok, Backend.t()} | {:error, term()}
-  def open(bus_name, options \\ []) do
+  @impl Backend
+  def open(bus_name, options) do
     retries = Keyword.get(options, :retries, 0)
 
     with {:ok, ref} <- Nif.open(bus_name) do
@@ -52,7 +53,7 @@ defmodule Circuits.I2C.I2CDev do
   @doc """
   Return information about this backend
   """
-  @spec info() :: map()
+  @impl Backend
   def info() do
     Nif.info()
     |> Map.put(:backend, __MODULE__)

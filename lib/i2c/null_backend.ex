@@ -4,12 +4,14 @@ defmodule Circuits.I2C.NilBackend do
   """
   @behaviour Circuits.I2C.Backend
 
+  alias Circuits.I2C.Backend
+
   @doc """
   Return the I2C bus names on this system
 
   No supported options
   """
-  @spec bus_names(keyword()) :: [<<_::80>>, ...]
+  @impl Backend
   def bus_names(_options \\ []), do: []
 
   @doc """
@@ -17,7 +19,7 @@ defmodule Circuits.I2C.NilBackend do
 
   No supported options.
   """
-  @spec open(String.t(), keyword()) :: {:error, term()}
+  @impl Backend
   def open(_bus_name, _options \\ []) do
     {:error, :unimplemented}
   end
@@ -25,7 +27,7 @@ defmodule Circuits.I2C.NilBackend do
   @doc """
   Return information about this backend
   """
-  @spec info() :: map()
+  @impl Backend
   def info() do
     %{name: __MODULE__}
   end
