@@ -1,6 +1,6 @@
-defprotocol SimpleDevice do
+defprotocol CircuitsSim.SimpleI2C do
   @moduledoc """
-  A SimpleDevice is a common style of register-based I2C devices
+  A protocol that makes register-based I2C devices easier to simulate
   """
 
   @doc """

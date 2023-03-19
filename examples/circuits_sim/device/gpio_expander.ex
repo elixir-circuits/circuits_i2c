@@ -1,7 +1,9 @@
-defmodule GPIOExpander do
+defmodule CircuitsSim.Device.GPIOExpander do
   @moduledoc """
   Implementation of a simple GPIO expander
   """
+  alias CircuitsSim.SimpleI2C
+
   defstruct [:gpios]
   @type t() :: %__MODULE__{gpios: non_neg_integer()}
 
@@ -10,16 +12,16 @@ defmodule GPIOExpander do
     %__MODULE__{gpios: 0}
   end
 
-  defimpl SimpleDevice do
-    @impl SimpleDevice
+  defimpl SimpleI2C do
+    @impl SimpleI2C
     def write_register(state, 1, value), do: %{state | gpios: value}
     def write_register(state, _other, _value), do: state
 
-    @impl SimpleDevice
+    @impl SimpleI2C
     def read_register(state, 1), do: {state.gpios, state}
     def read_register(state, _other), do: {0, state}
 
-    @impl SimpleDevice
+    @impl SimpleI2C
     def render(state) do
       {pin, io, values} =
         for i <- 0..7 do
@@ -33,7 +35,7 @@ defmodule GPIOExpander do
       ["     Pin: ", pin, "\n     I/O: ", io, "\n   Value: ", values, "\n"]
     end
 
-    @impl SimpleDevice
+    @impl SimpleI2C
     def handle_message(state, _message) do
       state
     end

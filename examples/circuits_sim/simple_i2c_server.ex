@@ -1,7 +1,9 @@
-defmodule SimpleDeviceServer do
+defmodule CircuitsSim.SimpleI2CServer do
   @moduledoc false
 
   use GenServer
+
+  alias CircuitsSim.SimpleI2C
 
   defstruct [:register, :device]
 
@@ -55,7 +57,7 @@ defmodule SimpleDeviceServer do
   end
 
   def handle_call(:render, _from, state) do
-    {:reply, SimpleDevice.render(state.device), state}
+    {:reply, SimpleI2C.render(state.device), state}
   end
 
   defp do_read(state, count, acc \\ [])
@@ -68,7 +70,7 @@ defmodule SimpleDeviceServer do
   defp do_read(state, count, acc) do
     reg = state.register
 
-    {v, device} = SimpleDevice.read_register(state.device, reg)
+    {v, device} = SimpleI2C.read_register(state.device, reg)
     new_state = %{state | device: device, register: inc8(reg)}
 
     do_read(new_state, count - 1, [v | acc])
@@ -78,12 +80,12 @@ defmodule SimpleDeviceServer do
   defp do_write(state, <<reg>>), do: %{state | register: reg}
 
   defp do_write(state, <<reg, value>>) do
-    device = SimpleDevice.write_register(state.device, reg, value)
+    device = SimpleI2C.write_register(state.device, reg, value)
     %{state | device: device, register: inc8(reg)}
   end
 
   defp do_write(state, <<reg, value, values::binary>>) do
-    device = SimpleDevice.write_register(state.device, reg, value)
+    device = SimpleI2C.write_register(state.device, reg, value)
     register = inc8(reg)
 
     new_state = %{state | device: device, register: register}

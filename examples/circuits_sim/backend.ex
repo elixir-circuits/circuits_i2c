@@ -1,10 +1,14 @@
-defmodule VirtualBackend do
+defmodule CircuitsSim.Backend do
   @moduledoc """
   Circuits.I2C backend that has a virtual GPIO Expander on it
   """
   @behaviour Circuits.I2C.Backend
 
   alias Circuits.I2C.Backend
+  alias CircuitsSim.Bus
+  alias CircuitsSim.Device.GPIOExpander
+  alias CircuitsSim.SimpleI2C
+  alias CircuitsSim.SimpleI2CServer
 
   @doc """
   Return the I2C bus names on this system
@@ -21,9 +25,9 @@ defmodule VirtualBackend do
   def open(bus_name, options \\ [])
 
   def open("i2c-0", _options) do
-    {:ok, pid} = SimpleDeviceServer.start_link(device: GPIOExpander.new())
+    {:ok, pid} = SimpleI2CServer.start_link(device: GPIOExpander.new())
 
-    {:ok, %VirtualBus{pid: pid}}
+    {:ok, %Bus{pid: pid}}
   end
 
   def open(other, _options) do

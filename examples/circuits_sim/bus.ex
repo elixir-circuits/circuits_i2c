@@ -1,4 +1,4 @@
-defmodule VirtualBus do
+defmodule CircuitsSim.Bus do
   @moduledoc """
   Circuits.I2C bus that has a virtual GPIO Expander on it
   """
@@ -14,7 +14,7 @@ defmodule VirtualBus do
       if address == 0x20 do
         [
           "#{address}: \n",
-          SimpleDeviceServer.render(bus.pid)
+          SimpleI2CServer.render(bus.pid)
         ]
       else
         []
@@ -26,18 +26,18 @@ defmodule VirtualBus do
 
   defimpl Bus do
     @impl Bus
-    def read(%VirtualBus{pid: pid}, address, count, _options) do
+    def read(%CircuitsSim.Bus{pid: pid}, address, count, _options) do
       if address == 0x20 do
-        SimpleDeviceServer.read(pid, count)
+        SimpleI2CServer.read(pid, count)
       else
         {:error, :nack}
       end
     end
 
     @impl Bus
-    def write(%VirtualBus{pid: pid}, address, data, _options) do
+    def write(%CircuitsSim.Bus{pid: pid}, address, data, _options) do
       if address == 0x20 do
-        SimpleDeviceServer.write(pid, data)
+        SimpleI2CServer.write(pid, data)
       else
         {:error, :nack}
       end
@@ -45,20 +45,20 @@ defmodule VirtualBus do
 
     @impl Bus
     def write_read(
-          %VirtualBus{pid: pid},
+          %CircuitsSim.Bus{pid: pid},
           address,
           write_data,
           read_count,
           _options
         ) do
       if address == 0x20 do
-        SimpleDeviceServer.write_read(pid, write_data, read_count)
+        SimpleI2CServer.write_read(pid, write_data, read_count)
       else
         {:error, :nack}
       end
     end
 
     @impl Bus
-    def close(%VirtualBus{}), do: :ok
+    def close(%CircuitsSim.Bus{}), do: :ok
   end
 end
