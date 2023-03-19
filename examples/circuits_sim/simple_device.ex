@@ -12,7 +12,7 @@ defprotocol SimpleDevice do
   @doc """
   Read a register
   """
-  @spec read_register(t(), non_neg_integer()) :: {non_neg_integer, t()}
+  @spec read_register(t(), non_neg_integer()) :: {non_neg_integer(), t()}
   def read_register(dev, reg)
 
   @doc """
@@ -20,4 +20,15 @@ defprotocol SimpleDevice do
   """
   @spec render(t()) :: IO.ANSI.ansidata()
   def render(dev)
+
+  @doc """
+  Handle an user message
+
+  User messages are used to modify the state of the simulated device outside of
+  I2C. This can be used to simulate real world changes like temperature changes
+  affecting a simulated temperature sensor. Another use is as a hook for getting
+  internal state.
+  """
+  @spec handle_message(t(), any()) :: {any(), t()}
+  def handle_message(dev, message)
 end

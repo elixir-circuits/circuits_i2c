@@ -32,7 +32,7 @@ defmodule Circuits.I2C.MixProject do
     ]
   end
 
-  defp elixirc_paths(env) when env in [:test, :dev], do: ["lib", "examples"]
+  defp elixirc_paths(env) when env in [:test, :dev], do: ["lib", "examples/circuits_sim"]
   defp elixirc_paths(_env), do: ["lib"]
 
   def application do

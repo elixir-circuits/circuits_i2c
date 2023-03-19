@@ -33,6 +33,11 @@ defmodule GPIOExpander do
       ["     Pin: ", pin, "\n     I/O: ", io, "\n   Value: ", values, "\n"]
     end
 
+    @impl SimpleDevice
+    def handle_message(state, _message) do
+      state
+    end
+
     defp unzip3(list, acc \\ {[], [], []})
 
     defp unzip3([], {a, b, c}) do
