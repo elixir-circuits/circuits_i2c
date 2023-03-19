@@ -2,10 +2,23 @@ defmodule Circuits.I2C.MPSSE do
   @moduledoc """
   Circuits.I2C backend for USB devices that use the FTDI MPSSE protocol
 
-  Examples of devices that speak MPSSE:
+  Devices that speak MPSSE:
 
   * [Adafruit FT232H Breakout](https://www.adafruit.com/product/2264)
 
+  Example use:
+
+  ```elixir
+  iex> {:ok, i2c} = Circuits.I2C.MPSSE.open("anything", [])
+  {:ok, %Circuits.I2C.MPSSE{mpsse: #Reference<0.3204948360.1742602257.8675>}}
+  iex> Circuits.I2C.detect_devices(i2c)
+  'P'
+  # This is also [0x50]. 0x50 is the address of an I2C EEPROM. Read the beginning.
+  iex> Circuits.I2C.write_read(i2c, 0x50, <<0>>, 16)
+  {:ok, <<34, 51, 68, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255>>}
+  iex> Circuits.I2C.close(i2c)
+  :ok
+  ```
   """
   @behaviour Circuits.I2C.Backend
 
