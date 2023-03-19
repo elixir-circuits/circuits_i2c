@@ -26,7 +26,7 @@ defmodule Circuits.I2C.Backend do
   Open an I2C bus
 
   Bus names are typically of the form `"i2c-n"` and available buses may be
-  found by calling `Circuits.I2C.I2CDev.bus_names/0`.
+  found by calling `bus_names/1`.
 
   Options:
 
