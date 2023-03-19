@@ -1,15 +1,17 @@
 defmodule VirtualBus do
   @moduledoc """
-  Circuits.I2C backend that has a virtual GPIO Expander on it
+  Circuits.I2C bus that has a virtual GPIO Expander on it
   """
 
   alias Circuits.I2C.Bus
 
   defstruct [:pid]
+  @type t() :: %__MODULE__{pid: pid()}
 
+  @spec render(t()) :: String.t()
   def render(%__MODULE__{} = bus) do
     for address <- 0..127 do
-      if(address == 0x20) do
+      if address == 0x20 do
         [
           "#{address}: \n",
           SimpleDeviceServer.render(bus.pid)

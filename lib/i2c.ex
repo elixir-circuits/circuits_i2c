@@ -344,7 +344,7 @@ defmodule Circuits.I2C do
 
   This may be helpful when debugging I2C issues.
   """
-  @spec info(backend()) :: map()
+  @spec info(backend() | nil) :: map()
   def info(backend \\ nil)
 
   def info(nil), do: info(default_backend())

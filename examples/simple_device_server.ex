@@ -1,7 +1,5 @@
 defmodule SimpleDeviceServer do
-  @moduledoc """
-
-  """
+  @moduledoc false
 
   use GenServer
 

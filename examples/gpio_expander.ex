@@ -1,6 +1,11 @@
 defmodule GPIOExpander do
+  @moduledoc """
+  Implementation of a simple GPIO expander
+  """
   defstruct [:gpios]
+  @type t() :: %__MODULE__{gpios: non_neg_integer()}
 
+  @spec new() :: %__MODULE__{gpios: 0}
   def new() do
     %__MODULE__{gpios: 0}
   end

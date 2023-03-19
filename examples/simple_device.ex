@@ -18,6 +18,6 @@ defprotocol SimpleDevice do
   @doc """
   Return a pretty printable view the the state
   """
-  @spec render(t()) :: IO.ansidata()
+  @spec render(t()) :: IO.ANSI.ansidata()
   def render(dev)
 end

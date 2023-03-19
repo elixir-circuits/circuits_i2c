@@ -2,8 +2,9 @@ defmodule VirtualBackend do
   @moduledoc """
   Circuits.I2C backend that has a virtual GPIO Expander on it
   """
+  @behaviour Circuits.I2C.Backend
+
   alias Circuits.I2C.Backend
-  @behaviour Backend
 
   @doc """
   Return the I2C bus names on this system
