@@ -33,7 +33,7 @@ defmodule Circuits.I2C.MixProject do
   end
 
   defp elixirc_paths(env) when env in [:test, :dev],
-    do: ["lib", "examples/circuits_sim", "examples/backends/mpsse_backend.ex"]
+    do: ["lib", "examples/backends/mpsse_backend.ex"]
 
   defp elixirc_paths(_env), do: ["lib"]
 
