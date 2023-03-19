@@ -15,7 +15,7 @@ defprotocol Circuits.I2C.Bus do
   """
   @spec read(t(), Circuits.I2C.address(), non_neg_integer(), keyword()) ::
           {:ok, binary()} | {:error, term()}
-  def read(backend, address, count, options)
+  def read(bus, address, count, options)
 
   @doc """
   Write data over I2C
@@ -23,7 +23,7 @@ defprotocol Circuits.I2C.Bus do
   The controller should write the passed in data to the specified I2C address.
   """
   @spec write(t(), Circuits.I2C.address(), iodata(), keyword()) :: :ok | {:error, term()}
-  def write(backend, address, data, options)
+  def write(bus, address, data, options)
 
   @doc """
   Write data and read a result in one I2C transaction
@@ -34,7 +34,7 @@ defprotocol Circuits.I2C.Bus do
   """
   @spec write_read(t(), Circuits.I2C.address(), iodata(), non_neg_integer(), keyword()) ::
           {:ok, binary()} | {:error, term()}
-  def write_read(backend, address, write_data, read_count, options)
+  def write_read(bus, address, write_data, read_count, options)
 
   @doc """
   Free up resources associated with the bus
@@ -44,5 +44,5 @@ defprotocol Circuits.I2C.Bus do
   limited resources are freed before they're needed again.
   """
   @spec close(t()) :: :ok
-  def close(backend)
+  def close(bus)
 end
