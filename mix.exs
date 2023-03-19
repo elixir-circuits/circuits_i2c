@@ -32,7 +32,9 @@ defmodule Circuits.I2C.MixProject do
     ]
   end
 
-  defp elixirc_paths(env) when env in [:test, :dev], do: ["lib", "examples/circuits_sim"]
+  defp elixirc_paths(:mpsse),
+    do: ["lib", "examples/backends/mpsse_backend.ex"]
+
   defp elixirc_paths(_env), do: ["lib"]
 
   def application do
@@ -66,7 +68,8 @@ defmodule Circuits.I2C.MixProject do
       {:credo, "~> 1.6", only: :dev, runtime: false},
       {:credo_binary_patterns, "~> 0.2.2", only: :dev, runtime: false},
       {:dialyxir, "~> 1.2", only: :dev, runtime: false},
-      {:elixir_make, "~> 0.6", runtime: false}
+      {:elixir_make, "~> 0.6", runtime: false},
+      {:mpsse, github: "fhunleth/mpsse", submodules: true, only: :mpsse}
     ]
   end
 
