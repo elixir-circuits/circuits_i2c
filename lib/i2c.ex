@@ -64,7 +64,7 @@ defmodule Circuits.I2C do
   The same I2C bus may be opened more than once. There is no need to share
   it between modules.
 
-  On success, this returns a `Circuits.I2C.Backend.t()` struct for accessing the
+  On success, this returns a `Circuits.I2C.Bus.t()` struct for accessing the
   I2C bus. Use this in subsequent calls to read and write I2C devices.
 
   Options depend on the backend. The following are for the I2CDev (default)
