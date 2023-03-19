@@ -4,6 +4,7 @@ defmodule CircuitsSim.Bus do
   """
 
   alias Circuits.I2C.Bus
+  alias CircuitsSim.SimpleI2CServer
 
   defstruct [:pid]
   @type t() :: %__MODULE__{pid: pid()}

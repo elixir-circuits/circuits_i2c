@@ -7,7 +7,6 @@ defmodule CircuitsSim.Backend do
   alias Circuits.I2C.Backend
   alias CircuitsSim.Bus
   alias CircuitsSim.Device.GPIOExpander
-  alias CircuitsSim.SimpleI2C
   alias CircuitsSim.SimpleI2CServer
 
   @doc """
