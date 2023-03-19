@@ -16,7 +16,7 @@ jobs:
     steps:
       - run:
           name: Install system dependencies
-          command: apk add --no-cache build-base linux-headers
+          command: apk add --no-cache build-base linux-headers git libftdi1-dev
       - checkout
       - run:
           name: Install hex and rebar
