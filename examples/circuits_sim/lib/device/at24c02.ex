@@ -29,23 +29,24 @@ defmodule CircuitsSim.Device.AT24C02 do
 
     defp hex(x) do
       [
-        Integer.to_string(div(x, 16)),
-        Integer.to_string(rem(x, 16))
+        Integer.to_string(div(x, 16), 16),
+        Integer.to_string(rem(x, 16), 16)
       ]
     end
 
     @impl SimpleI2C
     def render(state) do
-      header = for i <- 0..15, do: [Integer.to_string(i, 16), "  "]
+      header = for i <- 0..15, do: ["  ", Integer.to_string(i, 16)]
 
       [
-        "  ",
+        "   ",
         header,
         "\n",
         for i <- 0..255 do
+          front = if rem(i, 16) == 0, do: [hex(i), ": "], else: []
           v = elem(state.contents, i)
           term = if rem(i, 16) == 15, do: "\n", else: " "
-          [hex(v), term]
+          [front, hex(v), term]
         end
       ]
     end

@@ -4,6 +4,15 @@ defmodule CircuitsSim.Device.GPIOExpander do
   """
   alias CircuitsSim.SimpleI2C
 
+  def child_spec(arg) do
+    combined_args = Keyword.merge([device: __MODULE__.new()], arg)
+
+    %{
+      id: __MODULE__,
+      start: {CircuitsSim.SimpleI2CServer, :start_link, combined_args}
+    }
+  end
+
   defstruct [:gpios]
   @type t() :: %__MODULE__{gpios: non_neg_integer()}
 

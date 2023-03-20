@@ -6,8 +6,7 @@ defmodule CircuitsSim.Backend do
 
   alias Circuits.I2C.Backend
   alias CircuitsSim.Bus
-  alias CircuitsSim.Device.GPIOExpander
-  alias CircuitsSim.SimpleI2CServer
+  alias CircuitsSim.DeviceRegistry
 
   @doc """
   Return the I2C bus names on this system
@@ -15,7 +14,9 @@ defmodule CircuitsSim.Backend do
   No supported options
   """
   @impl Backend
-  def bus_names(_options \\ []), do: ["i2c-0"]
+  def bus_names(_options \\ []) do
+    DeviceRegistry.bus_names()
+  end
 
   @doc """
   Open an I2C bus
@@ -23,10 +24,8 @@ defmodule CircuitsSim.Backend do
   @impl Backend
   def open(bus_name, options \\ [])
 
-  def open("i2c-0", _options) do
-    {:ok, pid} = SimpleI2CServer.start_link(device: GPIOExpander.new())
-
-    {:ok, %Bus{pid: pid}}
+  def open("i2c-0" = bus_name, _options) do
+    {:ok, %Bus{bus_name: bus_name}}
   end
 
   def open(other, _options) do

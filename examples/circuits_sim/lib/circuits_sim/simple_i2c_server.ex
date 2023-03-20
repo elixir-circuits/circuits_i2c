@@ -3,34 +3,48 @@ defmodule CircuitsSim.SimpleI2CServer do
 
   use GenServer
 
+  alias Circuits.I2C
+  alias CircuitsSim.DeviceRegistry
   alias CircuitsSim.SimpleI2C
 
   defstruct [:register, :device]
 
   @spec start_link(keyword()) :: GenServer.on_start()
   def start_link(init_args) do
-    GenServer.start_link(__MODULE__, init_args)
+    bus_name = Keyword.fetch!(init_args, :bus_name)
+    address = Keyword.fetch!(init_args, :address)
+
+    GenServer.start_link(__MODULE__, init_args, name: DeviceRegistry.via_name(bus_name, address))
   end
 
-  @spec read(GenServer.server(), non_neg_integer()) :: {:ok, binary()} | {:error, any()}
-  def read(server, count) do
-    GenServer.call(server, {:read, count})
-  end
-
-  @spec write(GenServer.server(), iodata()) :: :ok | {:error, any()}
-  def write(server, data) do
-    GenServer.call(server, {:write, data})
-  end
-
-  @spec write_read(GenServer.server(), iodata(), non_neg_integer()) ::
+  @spec read(I2C.bus_name(), I2C.address(), non_neg_integer()) ::
           {:ok, binary()} | {:error, any()}
-  def write_read(server, data, read_count) do
-    GenServer.call(server, {:write_read, data, read_count})
+  def read(bus_name, address, count) do
+    GenServer.call(DeviceRegistry.via_name(bus_name, address), {:read, count})
+  catch
+    :exit, {:noproc, _} -> {:error, :nak}
   end
 
-  @spec render(GenServer.server()) :: IO.ANSI.ansidata()
-  def render(server) do
-    GenServer.call(server, :render)
+  @spec write(I2C.bus_name(), I2C.address(), iodata()) :: :ok | {:error, any()}
+  def write(bus_name, address, data) do
+    GenServer.call(DeviceRegistry.via_name(bus_name, address), {:write, data})
+  catch
+    :exit, {:noproc, _} -> {:error, :nak}
+  end
+
+  @spec write_read(I2C.bus_name(), I2C.address(), iodata(), non_neg_integer()) ::
+          {:ok, binary()} | {:error, any()}
+  def write_read(bus_name, address, data, read_count) do
+    GenServer.call(DeviceRegistry.via_name(bus_name, address), {:write_read, data, read_count})
+  catch
+    :exit, {:noproc, _} -> {:error, :nak}
+  end
+
+  @spec render(I2C.bus_name(), I2C.address()) :: IO.ANSI.ansidata()
+  def render(bus_name, address) do
+    GenServer.call(DeviceRegistry.via_name(bus_name, address), :render)
+  catch
+    :exit, {:noproc, _} -> []
   end
 
   @impl GenServer
@@ -46,12 +60,12 @@ defmodule CircuitsSim.SimpleI2CServer do
   end
 
   def handle_call({:write, data}, _from, state) do
-    new_state = state |> do_write(data)
+    new_state = state |> do_write(IO.iodata_to_binary(data))
     {:reply, :ok, new_state}
   end
 
   def handle_call({:write_read, data, read_count}, _from, state) do
-    {result, new_state} = state |> do_write(data) |> do_read(read_count)
+    {result, new_state} = state |> do_write(IO.iodata_to_binary(data)) |> do_read(read_count)
 
     {:reply, {:ok, result}, new_state}
   end
