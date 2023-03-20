@@ -28,6 +28,12 @@ defmodule Circuits.I2C.I2CDev do
         Path.wildcard("/dev/i2c-*")
         |> Enum.map(fn p -> String.replace_prefix(p, "/dev/", "") end)
       end
+
+    _ ->
+      @impl Backend
+      def bus_names(_options) do
+        []
+      end
   end
 
   @doc """
