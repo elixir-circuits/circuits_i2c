@@ -28,9 +28,6 @@ defmodule CircuitsSim.Bus do
     @impl Bus
     def write(%CircuitsSim.Bus{} = bus, address, data, _options) do
       SimpleI2CServer.write(bus.bus_name, address, data)
-      # else
-      #   {:error, :nack}
-      # end
     end
 
     @impl Bus
@@ -41,11 +38,7 @@ defmodule CircuitsSim.Bus do
           read_count,
           _options
         ) do
-      if address == 0x20 do
-        SimpleI2CServer.write_read(bus.bus_name, 0x20, write_data, read_count)
-      else
-        {:error, :nack}
-      end
+      SimpleI2CServer.write_read(bus.bus_name, address, write_data, read_count)
     end
 
     @impl Bus
