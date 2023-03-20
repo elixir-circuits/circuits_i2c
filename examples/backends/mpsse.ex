@@ -58,6 +58,11 @@ defmodule Circuits.I2C.MPSSE do
 
   defimpl Bus do
     @impl Bus
+    def flags(%Circuits.I2C.MPSSE{}) do
+      [:supports_empty_write]
+    end
+
+    @impl Bus
     def read(%Circuits.I2C.MPSSE{mpsse: mpsse}, address, count, _options) do
       address_rd = Bitwise.bsl(address, 1) + 1
 

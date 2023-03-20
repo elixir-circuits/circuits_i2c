@@ -3,6 +3,19 @@ defprotocol Circuits.I2C.Bus do
   A bus is the connection to a real or virtual I2C controller
   """
 
+  @typedoc """
+  I2C controller flags
+
+  * `:supports_empty_write` - the controller supports sending empty binaries
+    to devices. These can be used for device detection.
+  """
+  @type flag() :: :supports_empty_write
+
+  @doc """
+  """
+  @spec flags(t()) :: [flag()]
+  def flags(bus)
+
   @doc """
   Read data over I2C
 

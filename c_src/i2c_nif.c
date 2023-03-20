@@ -69,7 +69,6 @@ int test_ioctl(int fd, unsigned long request, void *arg)
         return 0;
     } else if (request == I2C_RDWR) {
         struct i2c_rdwr_ioctl_data *data = (struct i2c_rdwr_ioctl_data *) arg;
-
         if (fd == 0x30) {
             // Flake out if first read or write
             if (flaky == 0) {
@@ -236,6 +235,14 @@ static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     if (fd < 0)
         return enif_make_errno_error(env);
 
+    // This next ioctl is also a check that the path passed in is
+    // actually an I2C device. If not, it will fail.
+    unsigned long funcs;
+    if (do_ioctl(fd, I2C_FUNCS, &funcs) < 0) {
+        close(fd);
+        return enif_make_errno_error(env);
+    }
+
     struct I2cNifRes *i2c_nif_res = enif_alloc_resource(priv->i2c_nif_res_type, sizeof(struct I2cNifRes));
     i2c_nif_res->fd = fd;
     ERL_NIF_TERM res_term = enif_make_resource(env, i2c_nif_res);
@@ -243,24 +250,7 @@ static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     // Elixir side owns the resource. Safe for NIF side to release it.
     enif_release_resource(i2c_nif_res);
 
-    return enif_make_tuple2(env, atom_ok, res_term);
-}
-
-static ERL_NIF_TERM i2c_flags(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
-{
-    struct I2cNifPriv *priv = enif_priv_data(env);
-    struct I2cNifRes *res;
-
-    if (!enif_get_resource(env, argv[0], priv->i2c_nif_res_type, (void **)&res))
-        return enif_make_badarg(env);
-
-    unsigned long funcs;
-    if (do_ioctl(res->fd, I2C_FUNCS, &funcs) < 0) {
-        // Errors aren't reported. They just result in no flags.
-        funcs = 0;
-    }
-
-    return funcs_to_flags(env, funcs);
+    return enif_make_tuple3(env, atom_ok, res_term, funcs_to_flags(env, funcs));
 }
 
 static int retry_rdwr_ioctl(int fd, struct i2c_rdwr_ioctl_data *data, int retries)
@@ -421,7 +411,6 @@ static ERL_NIF_TERM i2c_info(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
 static ErlNifFunc nif_funcs[] =
 {
     {"open", 1, i2c_open, ERL_NIF_DIRTY_JOB_IO_BOUND},
-    {"flags", 1, i2c_flags, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"read", 4, i2c_read, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"write", 4, i2c_write, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"write_read", 5, i2c_write_read, ERL_NIF_DIRTY_JOB_IO_BOUND},

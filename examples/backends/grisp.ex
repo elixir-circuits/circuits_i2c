@@ -40,6 +40,11 @@ defmodule Circuits.I2C.GRiSP do
 
   defimpl Bus do
     @impl Bus
+    def flags(%Circuits.I2C.GRiSP{}) do
+      [:supports_empty_write]
+    end
+
+    @impl Bus
     def read(%Circuits.I2C.GRiSP{ref: ref}, address, count, _options) do
       with [result] <- :grisp_i2c.transfer(ref, [{:read, address, 0, count}]) do
         {:ok, result}

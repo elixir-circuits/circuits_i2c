@@ -10,7 +10,7 @@ defmodule Circuits.I2C.I2CDev do
   alias Circuits.I2C.Bus
   alias Circuits.I2C.Nif
 
-  defstruct [:ref, :retries]
+  defstruct [:ref, :retries, :flags]
 
   @doc """
   Return the I2C bus names on this system
@@ -51,8 +51,8 @@ defmodule Circuits.I2C.I2CDev do
   def open(bus_name, options) do
     retries = Keyword.get(options, :retries, 0)
 
-    with {:ok, ref} <- Nif.open(bus_name) do
-      {:ok, %__MODULE__{ref: ref, retries: retries}}
+    with {:ok, ref, flags} <- Nif.open(bus_name) do
+      {:ok, %__MODULE__{ref: ref, flags: flags, retries: retries}}
     end
   end
 
@@ -66,6 +66,11 @@ defmodule Circuits.I2C.I2CDev do
   end
 
   defimpl Bus do
+    @impl Bus
+    def flags(%Circuits.I2C.I2CDev{flags: flags}) do
+      flags
+    end
+
     @impl Bus
     def read(%Circuits.I2C.I2CDev{ref: ref, retries: retries}, address, count, options) do
       retries = Keyword.get(options, :retries, retries)

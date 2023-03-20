@@ -21,6 +21,11 @@ defmodule CircuitsSim.Bus do
 
   defimpl Bus do
     @impl Bus
+    def flags(%CircuitsSim.Bus{}) do
+      [:supports_empty_write]
+    end
+
+    @impl Bus
     def read(%CircuitsSim.Bus{} = bus, address, count, _options) do
       SimpleI2CServer.read(bus.bus_name, address, count)
     end
