@@ -3,12 +3,11 @@ defmodule CircuitsSim.Bus do
   Circuits.I2C bus that has a virtual GPIO Expander on it
   """
 
-  alias Circuits.I2C
   alias Circuits.I2C.Bus
   alias CircuitsSim.SimpleI2CServer
 
   defstruct [:bus_name]
-  @type t() :: %__MODULE__{bus_name: I2C.bus_name()}
+  @type t() :: %__MODULE__{bus_name: String.t()}
 
   @spec render(t()) :: String.t()
   def render(%__MODULE__{} = bus) do

@@ -4,7 +4,7 @@
     %{
       name: "default",
       files: %{
-        included: ["lib/", "examples/"],
+        included: ["lib/", "examples/backends/"],
         excluded: ["lib/i2c/i2c_nif.ex"]
       },
       strict: true,

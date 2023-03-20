@@ -17,7 +17,7 @@ defmodule CircuitsSim.SimpleI2CServer do
     GenServer.start_link(__MODULE__, init_args, name: DeviceRegistry.via_name(bus_name, address))
   end
 
-  @spec read(I2C.bus_name(), I2C.address(), non_neg_integer()) ::
+  @spec read(String.t(), I2C.address(), non_neg_integer()) ::
           {:ok, binary()} | {:error, any()}
   def read(bus_name, address, count) do
     GenServer.call(DeviceRegistry.via_name(bus_name, address), {:read, count})
@@ -25,14 +25,14 @@ defmodule CircuitsSim.SimpleI2CServer do
     :exit, {:noproc, _} -> {:error, :nak}
   end
 
-  @spec write(I2C.bus_name(), I2C.address(), iodata()) :: :ok | {:error, any()}
+  @spec write(String.t(), I2C.address(), iodata()) :: :ok | {:error, any()}
   def write(bus_name, address, data) do
     GenServer.call(DeviceRegistry.via_name(bus_name, address), {:write, data})
   catch
     :exit, {:noproc, _} -> {:error, :nak}
   end
 
-  @spec write_read(I2C.bus_name(), I2C.address(), iodata(), non_neg_integer()) ::
+  @spec write_read(String.t(), I2C.address(), iodata(), non_neg_integer()) ::
           {:ok, binary()} | {:error, any()}
   def write_read(bus_name, address, data, read_count) do
     GenServer.call(DeviceRegistry.via_name(bus_name, address), {:write_read, data, read_count})
@@ -40,7 +40,7 @@ defmodule CircuitsSim.SimpleI2CServer do
     :exit, {:noproc, _} -> {:error, :nak}
   end
 
-  @spec render(I2C.bus_name(), I2C.address()) :: IO.ANSI.ansidata()
+  @spec render(String.t(), I2C.address()) :: IO.ANSI.ansidata()
   def render(bus_name, address) do
     GenServer.call(DeviceRegistry.via_name(bus_name, address), :render)
   catch
