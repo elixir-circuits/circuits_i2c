@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.2.1 - 2023-03-20
+
+* Fixes
+  * Detect I2C controllers that don't support 0-byte writes and revert to the
+    old detection heuristic. This fixes an issue on Beaglebones (AM335x) that
+    caused devices to be missed and kernel warnings to be logged.
+
 ## v1.2.0 - 2023-03-17
 
 * Changes
