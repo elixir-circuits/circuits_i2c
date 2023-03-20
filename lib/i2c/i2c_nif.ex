@@ -22,7 +22,6 @@ defmodule Circuits.I2C.Nif do
   end
 
   def open(_device), do: :erlang.nif_error(:nif_not_loaded)
-  def flags(_ref), do: :erlang.nif_error(:nif_not_loaded)
   def read(_ref, _address, _count, _retries), do: :erlang.nif_error(:nif_not_loaded)
   def write(_ref, _address, _data, _retries), do: :erlang.nif_error(:nif_not_loaded)
 

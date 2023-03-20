@@ -14,20 +14,16 @@ defmodule Circuits.I2CNifTest do
 
   describe "open/1" do
     test "i2c-test-0 and i2c-test-1 work" do
-      {:ok, i2c} = Nif.open("i2c-test-0")
+      {:ok, i2c, flags} = Nif.open("i2c-test-0")
       Nif.close(i2c)
+      assert flags == []
 
-      {:ok, i2c} = Nif.open("i2c-test-1")
+      {:ok, i2c, flags} = Nif.open("i2c-test-1")
       Nif.close(i2c)
+      assert flags == []
 
       assert {:error, _} = Nif.open("i2c-2")
     end
-  end
-
-  test "flags/1" do
-    {:ok, i2c} = Nif.open("i2c-test-0")
-    assert Nif.flags(i2c) == []
-    Nif.close(i2c)
   end
 
   test "unloading NIF" do
@@ -37,7 +33,7 @@ defmodule Circuits.I2CNifTest do
       assert {:module, Circuits.I2C.Nif} == :code.ensure_loaded(Circuits.I2C.Nif)
 
       # Try running something to verify that it works.
-      {:ok, i2c} = Nif.open("i2c-test-0")
+      {:ok, i2c, _} = Nif.open("i2c-test-0")
       assert is_reference(i2c)
       Nif.close(i2c)
 
@@ -75,7 +71,7 @@ defmodule Circuits.I2CNifTest do
         assert {:module, Circuits.I2C.Nif} == :code.ensure_loaded(Circuits.I2C.Nif)
 
         # Try running something to verify that it works.
-        {:ok, i2c} = Nif.open("i2c-test-0")
+        {:ok, i2c, _} = Nif.open("i2c-test-0")
         assert is_reference(i2c)
         Nif.close(i2c)
 

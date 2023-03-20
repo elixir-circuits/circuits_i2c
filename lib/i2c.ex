@@ -331,7 +331,7 @@ defmodule Circuits.I2C do
     cond do
       address in 0x30..0x37 -> probe_read(bus, address)
       address in 0x50..0x5F -> probe_read(bus, address)
-      :supports_empty_write in Nif.flags(bus) -> probe_empty_write(bus, address)
+      :supports_empty_write in Bus.flags(bus) -> probe_empty_write(bus, address)
       true -> probe_read(bus, address)
     end
   end
