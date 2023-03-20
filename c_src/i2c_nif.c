@@ -177,11 +177,14 @@ static ERL_NIF_TERM enif_make_errno_error(ErlNifEnv *env)
         reason = enif_make_atom(env, "bus_not_found");
         break;
 
+    case EOPNOTSUPP:
+        reason = enif_make_atom(env, "not_supported");
+        break;
+
     default:
-        // strerror isn't usually that helpful, so if these
-        // errors happen, please report or update this code
-        // to provide a better reason.
-        reason = enif_make_atom(env, strerror(errno));
+        // These errors aren't that helpful, so if they happen, please report
+        // or update this code to provide a better reason.
+        reason = enif_make_tuple2(env, enif_make_atom(env, "errno"), enif_make_int(env, errno));
         break;
     }
 
