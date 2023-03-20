@@ -24,6 +24,12 @@ defmodule Circuits.I2CNifTest do
     end
   end
 
+  test "flags/1" do
+    {:ok, i2c} = Nif.open("i2c-test-0")
+    assert Nif.flags(i2c) == []
+    Nif.close(i2c)
+  end
+
   test "unloading NIF" do
     # The theory here is that there shouldn't be a crash if this is reloaded a
     # few times.

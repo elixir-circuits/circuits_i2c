@@ -331,13 +331,17 @@ defmodule Circuits.I2C do
   some devices to actually do something.
   """
   @spec device_present?(bus(), address()) :: boolean()
-  def device_present?(i2c, address) when address in 0x30..0x37 or address in 0x50..0x5F do
-    match?({:ok, _}, read(i2c, address, 1))
+  def device_present?(bus, address) do
+    cond do
+      address in 0x30..0x37 -> probe_read(bus, address)
+      address in 0x50..0x5F -> probe_read(bus, address)
+      :supports_empty_write in Nif.flags(bus) -> probe_empty_write(bus, address)
+      true -> probe_read(bus, address)
+    end
   end
 
-  def device_present?(i2c, address) do
-    :ok == write(i2c, address, <<>>)
-  end
+  defp probe_read(bus, address), do: match?({:ok, _}, read(bus, address, 1))
+  defp probe_empty_write(bus, address), do: :ok == write(bus, address, <<>>)
 
   @doc """
   Return info about the low level I2C interface

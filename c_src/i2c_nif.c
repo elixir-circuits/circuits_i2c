@@ -51,26 +51,34 @@ int stub_close(int fd)
     else
         return -1;
 }
-int stub_ioctl(int fd, unsigned long request, struct i2c_rdwr_ioctl_data *data)
+int stub_ioctl(int fd, unsigned long request, void *arg)
 {
     if (fd != 0x10 && fd != 0x20)
         return -1;
 
-    if (request != I2C_RDWR)
-        return -1;
+    if (request == I2C_FUNCS) {
+        unsigned long *funcs = (unsigned long *) arg;
+        *funcs = 0;
+        return 0;
+    } else if (request == I2C_RDWR) {
+        struct i2c_rdwr_ioctl_data *data = (struct i2c_rdwr_ioctl_data *) arg;
 
-    for (unsigned int i = 0; i < data->nmsgs; i++) {
-        struct i2c_msg *msg = &data->msgs[i];
-        if (msg->addr != fd)
-            return -1;
+        for (unsigned int i = 0; i < data->nmsgs; i++) {
+            struct i2c_msg *msg = &data->msgs[i];
+            if (msg->addr != fd)
+                return -1;
 
-        if (msg->flags & I2C_M_RD) {
-            for (int j = 0; j < msg->len; j++) {
-                msg->buf[j] = msg->addr + j;
+            if (msg->flags & I2C_M_RD) {
+                for (int j = 0; j < msg->len; j++) {
+                    msg->buf[j] = msg->addr + j;
+                }
             }
         }
+        return data->nmsgs;
+    } else {
+        // Unknown ioctl
+        return -1;
     }
-    return data->nmsgs;
 }
 #else
 #define BACKEND_NAME "i2c_dev"
@@ -182,6 +190,20 @@ static ERL_NIF_TERM enif_make_errno_error(ErlNifEnv *env)
     return enif_make_tuple2(env, atom_error, reason);
 }
 
+static ERL_NIF_TERM funcs_to_flags(ErlNifEnv *env, unsigned long funcs)
+{
+    // Documentation for the funcs is at https://docs.kernel.org/i2c/functionality.html.
+    // We convert them to Circuits.I2C flags since the Circuits.I2C API
+    // doesn't use SMBus terminology.
+
+    // Only one flag supported now
+    if (funcs & I2C_FUNC_SMBUS_QUICK) {
+        return enif_make_list1(env, enif_make_atom(env, "supports_empty_write"));
+    } else {
+        return enif_make_list(env, 0);
+    }
+}
+
 static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
     struct I2cNifPriv *priv = enif_priv_data(env);
@@ -204,6 +226,23 @@ static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     enif_release_resource(i2c_nif_res);
 
     return enif_make_tuple2(env, atom_ok, res_term);
+}
+
+static ERL_NIF_TERM i2c_flags(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
+{
+    struct I2cNifPriv *priv = enif_priv_data(env);
+    struct I2cNifRes *res;
+
+    if (!enif_get_resource(env, argv[0], priv->i2c_nif_res_type, (void **)&res))
+        return enif_make_badarg(env);
+
+    unsigned long funcs;
+    if (do_ioctl(res->fd, I2C_FUNCS, &funcs) < 0) {
+        // Errors aren't reported. They just result in no flags.
+        funcs = 0;
+    }
+
+    return funcs_to_flags(env, funcs);
 }
 
 static int retry_rdwr_ioctl(int fd, struct i2c_rdwr_ioctl_data *data, int retries)
@@ -234,9 +273,9 @@ static ERL_NIF_TERM i2c_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     int retries;
 
     if (!enif_get_resource(env, argv[0], priv->i2c_nif_res_type, (void **)&res) ||
-        !enif_get_uint(env, argv[1], &addr) ||
-        !enif_get_ulong(env, argv[2], &read_len) ||
-        !enif_get_int(env, argv[3], &retries))
+            !enif_get_uint(env, argv[1], &addr) ||
+            !enif_get_ulong(env, argv[2], &read_len) ||
+            !enif_get_int(env, argv[3], &retries))
         return enif_make_badarg(env);
 
     raw_bin_read = enif_make_new_binary(env, read_len, &bin_read);
@@ -270,9 +309,9 @@ static ERL_NIF_TERM i2c_write(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[
     int retries;
 
     if (!enif_get_resource(env, argv[0], priv->i2c_nif_res_type, (void **)&res) ||
-        !enif_get_uint(env, argv[1], &addr) ||
-        !enif_inspect_iolist_as_binary(env, argv[2], &bin_write) ||
-        !enif_get_int(env, argv[3], &retries))
+            !enif_get_uint(env, argv[1], &addr) ||
+            !enif_inspect_iolist_as_binary(env, argv[2], &bin_write) ||
+            !enif_get_int(env, argv[3], &retries))
         return enif_make_badarg(env);
 
     struct i2c_rdwr_ioctl_data data;
@@ -304,10 +343,10 @@ static ERL_NIF_TERM i2c_write_read(ErlNifEnv *env, int argc, const ERL_NIF_TERM 
     int retries;
 
     if (!enif_get_resource(env, argv[0], priv->i2c_nif_res_type, (void **)&res) ||
-        !enif_get_uint(env, argv[1], &addr) ||
-        !enif_inspect_iolist_as_binary(env, argv[2], &bin_write) ||
-        !enif_get_ulong(env, argv[3], &read_len) ||
-        !enif_get_int(env, argv[4], &retries))
+            !enif_get_uint(env, argv[1], &addr) ||
+            !enif_inspect_iolist_as_binary(env, argv[2], &bin_write) ||
+            !enif_get_ulong(env, argv[3], &read_len) ||
+            !enif_get_int(env, argv[4], &retries))
         return enif_make_badarg(env);
 
     raw_bin_read = enif_make_new_binary(env, read_len, &bin_read);
@@ -362,6 +401,7 @@ static ERL_NIF_TERM i2c_info(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
 static ErlNifFunc nif_funcs[] =
 {
     {"open", 1, i2c_open, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"flags", 1, i2c_flags, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"read", 4, i2c_read, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"write", 4, i2c_write, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"write_read", 5, i2c_write_read, ERL_NIF_DIRTY_JOB_IO_BOUND},
