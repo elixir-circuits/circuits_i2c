@@ -24,6 +24,7 @@ defmodule CircuitsSim.Application do
   end
 
   defp add_devices() do
+    # TODO: Move this to configuration.
     _ =
       DynamicSupervisor.start_child(
         CircuitSim.DeviceSupervisor,

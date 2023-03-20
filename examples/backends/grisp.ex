@@ -1,6 +1,8 @@
 defmodule Circuits.I2C.GRiSP do
   @moduledoc """
   Circuits.I2C backend for GRiSP
+
+  This is completely untested.
   """
   @behaviour Circuits.I2C.Backend
 
