@@ -9,6 +9,26 @@ defmodule CircuitsSim.SimpleI2CServer do
 
   defstruct [:register, :device]
 
+  @doc """
+  Helper for creating child_specs for simple I2C implementations
+  """
+  @spec child_spec_helper(SimpleI2C.t(), keyword()) :: map()
+  def child_spec_helper(device, args) do
+    bus_name = Keyword.fetch!(args, :bus_name)
+    address = Keyword.fetch!(args, :address)
+
+    combined_args =
+      Keyword.merge(
+        [device: device, name: DeviceRegistry.via_name(bus_name, address)],
+        args
+      )
+
+    %{
+      id: __MODULE__,
+      start: {CircuitsSim.SimpleI2CServer, :start_link, [combined_args]}
+    }
+  end
+
   @spec start_link(keyword()) :: GenServer.on_start()
   def start_link(init_args) do
     bus_name = Keyword.fetch!(init_args, :bus_name)

@@ -7,7 +7,6 @@ defmodule CircuitsSim.Application do
 
   alias CircuitsSim.Device.AT24C02
   alias CircuitsSim.Device.GPIOExpander
-  alias CircuitsSim.SimpleI2CServer
 
   @impl Application
   def start(_type, _args) do
@@ -17,25 +16,27 @@ defmodule CircuitsSim.Application do
       {Task, &add_devices/0}
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: CircuitsSim.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
-  defp add_devices() do
-    # TODO: Move this to configuration.
-    _ =
-      DynamicSupervisor.start_child(
-        CircuitSim.DeviceSupervisor,
-        {SimpleI2CServer, bus_name: "i2c-0", address: 0x20, device: GPIOExpander.new()}
-      )
+  defp config() do
+    %{
+      "i2c-0" => %{0x20 => GPIOExpander, 0x50 => AT24C02},
+      "i2c-1" => %{0x20 => GPIOExpander, 0x21 => GPIOExpander}
+    }
+  end
 
-    _ =
-      DynamicSupervisor.start_child(
-        CircuitSim.DeviceSupervisor,
-        {SimpleI2CServer, bus_name: "i2c-0", address: 0x50, device: AT24C02.new()}
-      )
+  defp add_devices() do
+    for {bus_name, devices} <- config() do
+      for {address, device} <- devices do
+        {:ok, _} =
+          DynamicSupervisor.start_child(
+            CircuitSim.DeviceSupervisor,
+            {device, bus_name: bus_name, address: address}
+          )
+      end
+    end
 
     :ok
   end

@@ -1,16 +1,15 @@
 defmodule CircuitsSim.Device.GPIOExpander do
   @moduledoc """
   Implementation of a simple GPIO expander
+
+  This is missing many features of a real GPIO expander.
   """
   alias CircuitsSim.SimpleI2C
+  alias CircuitsSim.SimpleI2CServer
 
-  def child_spec(arg) do
-    combined_args = Keyword.merge([device: __MODULE__.new()], arg)
-
-    %{
-      id: __MODULE__,
-      start: {CircuitsSim.SimpleI2CServer, :start_link, combined_args}
-    }
+  def child_spec(args) do
+    device = __MODULE__.new()
+    SimpleI2CServer.child_spec_helper(device, args)
   end
 
   defstruct [:gpios]

@@ -19,7 +19,7 @@ defmodule CircuitsSim do
   end
 
   defp bus_info(bus_name) do
-    case Backend.open(bus_name) do
+    case Backend.open(bus_name, []) do
       {:ok, i2c} ->
         result = Bus.render(i2c)
         Circuits.I2C.close(i2c)

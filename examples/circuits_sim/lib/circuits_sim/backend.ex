@@ -14,7 +14,7 @@ defmodule CircuitsSim.Backend do
   No supported options
   """
   @impl Backend
-  def bus_names(_options \\ []) do
+  def bus_names(_options) do
     DeviceRegistry.bus_names()
   end
 
@@ -22,14 +22,12 @@ defmodule CircuitsSim.Backend do
   Open an I2C bus
   """
   @impl Backend
-  def open(bus_name, options \\ [])
-
-  def open("i2c-0" = bus_name, _options) do
-    {:ok, %Bus{bus_name: bus_name}}
-  end
-
-  def open(other, _options) do
-    {:error, "Unknown controller #{other}"}
+  def open(bus_name, options) do
+    if bus_name in bus_names(options) do
+      {:ok, %Bus{bus_name: bus_name}}
+    else
+      {:error, "Unknown controller #{bus_name}"}
+    end
   end
 
   @doc """

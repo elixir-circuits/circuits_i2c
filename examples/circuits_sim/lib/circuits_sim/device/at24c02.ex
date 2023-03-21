@@ -7,9 +7,15 @@ defmodule CircuitsSim.Device.AT24C02 do
   boundaries when writing more than one byte.
   """
   alias CircuitsSim.SimpleI2C
+  alias CircuitsSim.SimpleI2CServer
 
   defstruct [:contents]
   @type t() :: %__MODULE__{contents: tuple()}
+
+  def child_spec(args) do
+    device = __MODULE__.new()
+    SimpleI2CServer.child_spec_helper(device, args)
+  end
 
   @spec new() :: t()
   def new() do
