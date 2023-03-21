@@ -43,7 +43,19 @@ defmodule CircuitsSim.Device.MCP23008 do
           olat: byte()
         }
 
-  @spec new() :: %__MODULE__{}
+  @spec new() :: %CircuitsSim.Device.MCP23008{
+          :defval => 0,
+          :gpinten => 0,
+          :gpio => 0,
+          :gppu => 0,
+          :intcap => 0,
+          :intcon => 0,
+          :intf => 0,
+          :iocon => 0,
+          :iodir => 255,
+          :ipol => 0,
+          :olat => 0
+        }
   def new() do
     %__MODULE__{
       iodir: 0xFF,

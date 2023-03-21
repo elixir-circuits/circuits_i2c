@@ -28,16 +28,14 @@ defmodule CircuitsSim.Application do
   end
 
   defp add_devices() do
-    for {bus_name, devices} <- config() do
-      for {address, device} <- devices do
+    Enum.each(config(), fn {bus_name, devices} ->
+      Enum.each(devices, fn {address, device} ->
         {:ok, _} =
           DynamicSupervisor.start_child(
             CircuitSim.DeviceSupervisor,
             {device, bus_name: bus_name, address: address}
           )
-      end
-    end
-
-    :ok
+      end)
+    end)
   end
 end

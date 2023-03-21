@@ -12,7 +12,10 @@ defmodule CircuitsSim.SimpleI2CServer do
   @doc """
   Helper for creating child_specs for simple I2C implementations
   """
-  @spec child_spec_helper(SimpleI2C.t(), keyword()) :: map()
+  @spec child_spec_helper(SimpleI2C.t(), keyword()) :: %{
+          :id => __MODULE__,
+          :start => {__MODULE__, :start_link, [[any()], ...]}
+        }
   def child_spec_helper(device, args) do
     bus_name = Keyword.fetch!(args, :bus_name)
     address = Keyword.fetch!(args, :address)
@@ -25,7 +28,7 @@ defmodule CircuitsSim.SimpleI2CServer do
 
     %{
       id: __MODULE__,
-      start: {CircuitsSim.SimpleI2CServer, :start_link, [combined_args]}
+      start: {__MODULE__, :start_link, [combined_args]}
     }
   end
 
