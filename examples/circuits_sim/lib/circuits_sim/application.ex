@@ -5,9 +5,6 @@ defmodule CircuitsSim.Application do
 
   use Application
 
-  alias CircuitsSim.Device.AT24C02
-  alias CircuitsSim.Device.MCP23008
-
   @impl Application
   def start(_type, _args) do
     children = [
@@ -20,15 +17,10 @@ defmodule CircuitsSim.Application do
     Supervisor.start_link(children, opts)
   end
 
-  defp config() do
-    %{
-      "i2c-0" => %{0x20 => MCP23008, 0x50 => AT24C02},
-      "i2c-1" => %{0x20 => MCP23008, 0x21 => MCP23008}
-    }
-  end
-
   defp add_devices() do
-    Enum.each(config(), fn {bus_name, devices} ->
+    config = Application.get_env(:circuits_sim, :config, %{})
+
+    Enum.each(config, fn {bus_name, devices} ->
       Enum.each(devices, fn {address, device} ->
         {:ok, _} =
           DynamicSupervisor.start_child(
