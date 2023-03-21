@@ -6,7 +6,7 @@ defmodule CircuitsSim.Application do
   use Application
 
   alias CircuitsSim.Device.AT24C02
-  alias CircuitsSim.Device.GPIOExpander
+  alias CircuitsSim.Device.MCP23008
 
   @impl Application
   def start(_type, _args) do
@@ -22,8 +22,8 @@ defmodule CircuitsSim.Application do
 
   defp config() do
     %{
-      "i2c-0" => %{0x20 => GPIOExpander, 0x50 => AT24C02},
-      "i2c-1" => %{0x20 => GPIOExpander, 0x21 => GPIOExpander}
+      "i2c-0" => %{0x20 => MCP23008, 0x50 => AT24C02},
+      "i2c-1" => %{0x20 => MCP23008, 0x21 => MCP23008}
     }
   end
 
