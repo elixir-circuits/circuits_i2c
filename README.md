@@ -12,9 +12,9 @@ If you're coming from Circuits 1.0 or Elixir/ALE, check out our [porting guide](
 ## Getting started
 
 By default, `Circuits.I2C` supports the Linux-based I2C driver interface so the
-following instructions assume a Linux-based system like Nerves, Raspberry Pi
-OS, embedded Linux or even desktop Linux if I2C lines are exposed. If you want
-to use `Circuits.I2C` on a different platform and support is availabe, generally
+following instructions assume a Linux-based system like Nerves, Raspberry Pi OS,
+embedded Linux or even desktop Linux if I2C lines are exposed. If you want to
+use `Circuits.I2C` on a different platform and support is available, generally
 the only difference is to change the "open" call. The rest is the same.
 
 First off, add `circuits_i2c` to your `mix.exs`'s dependency list like any other
@@ -89,10 +89,13 @@ iex> I2C.write_read(ref, 0x20, <<9>>, 1)
 
 ## Creating a new backend
 
-`Circuits.I2C` supports alternative backends to support non-Linux hardware, testing, and simulation. A backend can support communication on more than one I2C bus.
+`Circuits.I2C` supports alternative backends to support non-Linux hardware,
+testing, and simulation. A backend can support communication on more than one
+I2C bus.
 
-To create a new backend, you need to implement the `Circuits.I2C.Backend` behaviour. `Circuits.I2C` calls the `bus_names/1` callback to discover what
-I2C buses are available and then it calls the `open/2` callback to use the I2C bus.
+To create a new backend, you need to implement the `Circuits.I2C.Backend`
+behaviour. `Circuits.I2C` calls the `bus_names/1` callback to discover what I2C
+buses are available and then it calls the `open/2` callback to use the I2C bus.
 
 ## FAQ
 
@@ -164,12 +167,13 @@ you're not using Nerves.
 
 ### Can I develop code that uses Circuits.I2C on my laptop?
 
-You'll need to fake out the hardware. Code to do this depends on what your
-hardware actually does, but here's one example:
+You have a few options:
 
-* [Compiling and testing Elixir Nerves on your host machine](http://www.cultivatehq.com/posts/compiling-and-testing-elixir-nerves-on-your-host-machine/)
-
-Please share other examples if you have them.
+1. Connect your I2C devices to a USB->I2C adapter like a [Adafruit FT232H
+   Breakout](https://www.adafruit.com/product/2264)
+2. Use the CircuitsSim backend
+3. Create a custom backend and use it to mock interactions with the Circuits.I2C
+   API
 
 ### Will it run on Arduino?
 
