@@ -1,7 +1,7 @@
 defmodule Circuits.I2C.MixProject do
   use Mix.Project
 
-  @version "1.2.1"
+  @version "1.2.2"
   @source_url "https://github.com/elixir-circuits/circuits_i2c"
 
   def project do

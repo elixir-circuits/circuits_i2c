@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.2 - 2023-03-24
+
+* Fixes
+  * Add types.h compatibility header to hex package so that host MacOS builds
+    work again.
+
 ## v1.2.1 - 2023-03-20
 
 * Fixes
