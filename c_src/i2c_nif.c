@@ -160,9 +160,7 @@ static int i2c_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM info)
 static void i2c_unload(ErlNifEnv *env, void *priv_data)
 {
     debug("i2c_unload");
-    struct I2cNifPriv *priv = enif_priv_data(env);
-
-    enif_free(priv);
+    enif_free(priv_data);
 }
 
 static ERL_NIF_TERM enif_make_errno_error(ErlNifEnv *env)
