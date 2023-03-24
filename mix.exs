@@ -41,7 +41,8 @@ defmodule Circuits.I2C.MixProject do
       files: [
         "lib",
         "c_src/*.[ch]",
-        "c_src/linux/i2c-dev.h",
+        "c_src/linux/*.h",
+        "c_src/compat/linux/*.h",
         "mix.exs",
         "README.md",
         "PORTING.md",
