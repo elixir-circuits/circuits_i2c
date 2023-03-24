@@ -11,6 +11,7 @@ defmodule CircuitsSim.Device.ADS7138 do
   use GenServer
 
   alias CircuitsSim.DeviceRegistry
+  alias CircuitsSim.Tools
 
   defstruct name: nil, address: nil, registers: %{}, current: 0
 
@@ -80,7 +81,7 @@ defmodule CircuitsSim.Device.ADS7138 do
       for {reg, data} <- state.registers do
         [
           "  ",
-          hex(reg),
+          Tools.int_to_hex(reg),
           ": ",
           for(<<b::1 <- data>>, do: to_string(b)),
           " (",
@@ -90,13 +91,6 @@ defmodule CircuitsSim.Device.ADS7138 do
       end
 
     {:reply, data, state}
-  end
-
-  defp hex(x) do
-    [
-      Integer.to_string(div(x, 16), 16),
-      Integer.to_string(rem(x, 16), 16)
-    ]
   end
 
   defp read_register(state, register) do

@@ -5,6 +5,7 @@ defmodule CircuitsSim.Bus do
 
   alias Circuits.I2C.Bus
   alias CircuitsSim.SimpleI2CServer
+  alias CircuitsSim.Tools
 
   defstruct [:bus_name]
   @type t() :: %__MODULE__{bus_name: String.t()}
@@ -13,7 +14,8 @@ defmodule CircuitsSim.Bus do
   def render(%__MODULE__{} = bus) do
     for address <- 0..127 do
       info = SimpleI2CServer.render(bus.bus_name, address)
-      if info != [], do: ["Device 0x#{address}: \n", info, "\n"], else: []
+      hex_addr = Tools.int_to_hex(address)
+      if info != [], do: ["Device 0x#{hex_addr}: \n", info, "\n"], else: []
     end
     |> IO.ANSI.format()
     |> IO.iodata_to_binary()
