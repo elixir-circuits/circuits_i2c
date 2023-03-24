@@ -8,6 +8,7 @@ defmodule CircuitsSim.Device.AT24C02 do
   """
   alias CircuitsSim.SimpleI2C
   alias CircuitsSim.SimpleI2CServer
+  alias CircuitsSim.Tools
 
   defstruct [:contents]
 
@@ -50,13 +51,6 @@ defmodule CircuitsSim.Device.AT24C02 do
       {elem(state.contents, reg), state}
     end
 
-    defp hex(x) do
-      [
-        Integer.to_string(div(x, 16), 16),
-        Integer.to_string(rem(x, 16), 16)
-      ]
-    end
-
     @impl SimpleI2C
     def render(state) do
       header = for i <- 0..15, do: ["  ", Integer.to_string(i, 16)]
@@ -66,10 +60,10 @@ defmodule CircuitsSim.Device.AT24C02 do
         header,
         "\n",
         for i <- 0..255 do
-          front = if rem(i, 16) == 0, do: [hex(i), ": "], else: []
+          front = if rem(i, 16) == 0, do: [Tools.int_to_hex(i), ": "], else: []
           v = elem(state.contents, i)
           term = if rem(i, 16) == 15, do: "\n", else: " "
-          [front, hex(v), term]
+          [front, Tools.int_to_hex(v), term]
         end
       ]
     end
