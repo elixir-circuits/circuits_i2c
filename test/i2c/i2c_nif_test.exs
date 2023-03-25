@@ -4,16 +4,16 @@ defmodule Circuits.I2CNifTest do
   alias Circuits.I2C.Nif
 
   describe "info/0" do
-    test "info identifies as a stub and not a real i2c driver" do
+    test "info identifies as a i2c_dev_test and not a real i2c driver" do
       info = Nif.info()
 
       assert is_map(info)
-      assert info.name == :stub
+      assert info.test?
     end
   end
 
   describe "open/1" do
-    test "only i2c-test-0 and i2c-test-1 work" do
+    test "i2c-test-0 and i2c-test-1 work" do
       {:ok, i2c} = Nif.open("i2c-test-0")
       Nif.close(i2c)
 
@@ -49,82 +49,22 @@ defmodule Circuits.I2CNifTest do
     end
   end
 
-  describe "read/4" do
-    test "reading 0x10 works for i2c-test-0" do
-      {:ok, i2c} = Nif.open("i2c-test-0")
+  test "setting backend to unknown value doesn't load the NIF" do
+    original_backend = Application.get_env(:circuits_i2c, :default_backend)
 
-      assert {:ok, <<0x10, 0x11, 0x12, 0x13, 0x14>>} == Nif.read(i2c, 0x10, 5, 0)
-      assert {:error, _} = Nif.read(i2c, 0x11, 5, 0)
-      assert {:error, _} = Nif.read(i2c, 0x20, 5, 0)
+    # Unload the current code if loaded
+    _ = :code.delete(Circuits.I2C.Nif)
+    _ = :code.purge(Circuits.I2C.Nif)
 
-      :ok = Nif.close(i2c)
-    end
+    # Attempt loading. NIF shouldn't be loaded this time.
+    Application.put_env(:circuits_i2c, :default_backend, Some.Other.Backend)
+    assert {:module, Circuits.I2C.Nif} == :code.ensure_loaded(Circuits.I2C.Nif)
+    assert_raise UndefinedFunctionError, fn -> Circuits.I2C.info() end
 
-    test "reading 0x20 works for i2c-test-1" do
-      {:ok, i2c} = Nif.open("i2c-test-1")
-
-      assert {:ok, <<0x20, 0x21, 0x22, 0x23, 0x24>>} == Nif.read(i2c, 0x20, 5, 0)
-      assert {:error, _} = Nif.read(i2c, 0x10, 5, 0)
-      assert {:error, _} = Nif.read(i2c, 0x21, 5, 0)
-
-      :ok = Nif.close(i2c)
-    end
-  end
-
-  describe "write/4" do
-    test "writing 0x10 works for i2c-test-0" do
-      {:ok, i2c} = Nif.open("i2c-test-0")
-
-      assert :ok == Nif.write(i2c, 0x10, <<1, 2, 3, 4>>, 0)
-      assert {:error, _} = Nif.write(i2c, 0x11, <<1, 2, 3, 4>>, 0)
-      assert {:error, _} = Nif.write(i2c, 0x20, <<1, 2, 3, 4>>, 0)
-
-      :ok = Nif.close(i2c)
-    end
-
-    test "writing 0x20 works for i2c-test-1" do
-      {:ok, i2c} = Nif.open("i2c-test-1")
-
-      assert :ok == Nif.write(i2c, 0x20, <<1, 2, 3, 4>>, 0)
-      assert {:error, _} = Nif.write(i2c, 0x21, <<1, 2, 3, 4>>, 0)
-      assert {:error, _} = Nif.write(i2c, 0x10, <<1, 2, 3, 4>>, 0)
-
-      :ok = Nif.close(i2c)
-    end
-
-    test "writing iodata doesn't crash" do
-      {:ok, i2c} = Nif.open("i2c-test-0")
-
-      assert :ok == Nif.write(i2c, 0x10, [<<1, 2, 3, 4>>], 0)
-      assert :ok == Nif.write(i2c, 0x10, [<<>>], 0)
-      assert :ok == Nif.write(i2c, 0x10, [<<1, 2>>, <<3, 4>>], 0)
-      assert :ok == Nif.write(i2c, 0x10, [1, 2, 3, 4], 0)
-      assert :ok == Nif.write(i2c, 0x10, [[[[<<1, 2, 3, 4>>]]]], 0)
-
-      :ok = Nif.close(i2c)
-    end
-  end
-
-  describe "write_read/5" do
-    test "write_read 0x10 works for i2c-test-0" do
-      {:ok, i2c} = Nif.open("i2c-test-0")
-
-      assert {:ok, <<0x10, 0x11, 0x12, 0x13, 0x14>>} == Nif.write_read(i2c, 0x10, <<1>>, 5, 0)
-      assert {:error, _} = Nif.write_read(i2c, 0x11, <<1>>, 5, 0)
-      assert {:error, _} = Nif.write_read(i2c, 0x20, <<1>>, 5, 0)
-
-      :ok = Nif.close(i2c)
-    end
-
-    test "write_read 0x20 works for i2c-test-1" do
-      {:ok, i2c} = Nif.open("i2c-test-1")
-
-      assert {:ok, <<0x20, 0x21, 0x22, 0x23, 0x24>>} == Nif.write_read(i2c, 0x20, <<1>>, 5, 0)
-      assert {:error, _} = Nif.write_read(i2c, 0x11, <<1>>, 5, 0)
-      assert {:error, _} = Nif.write_read(i2c, 0x10, <<1>>, 5, 0)
-
-      :ok = Nif.close(i2c)
-    end
+    # Cleanup
+    assert true == :code.delete(Circuits.I2C.Nif)
+    assert false == :code.purge(Circuits.I2C.Nif)
+    Application.put_env(:circuits_i2c, :default_backend, original_backend)
   end
 
   describe "load tests" do

@@ -3,7 +3,7 @@ defmodule Circuits.I2C do
   `Circuits.I2C` lets you communicate with hardware devices using the I2C
   protocol.
   """
-  alias Circuits.I2C.Nif
+  alias Circuits.I2C.Bus
 
   # Public API
 
@@ -18,20 +18,20 @@ defmodule Circuits.I2C do
   @type address() :: 0..127
 
   @typedoc """
-  I2C bus
-
-  Call `open/1` to obtain an I2C bus reference and then pass it to the read
-  and write functions for interacting with devices.
-  """
-  @type bus() :: reference()
-
-  @typedoc """
   Function to report back whether a device is present
 
   See `discover/2` for how a custom function can improve device detection when
   the type of device being looked for is known.
   """
-  @type present?() :: (bus(), address() -> boolean())
+  @type present?() :: (Bus.t(), address() -> boolean())
+
+  @typedoc """
+  Backends specify an implementation of a Circuits.I2C.Backend behaviour
+
+  The second parameter of the Backend 2-tuple is a list of options. These are
+  passed to the behaviour function call implementations.
+  """
+  @type backend() :: {module(), keyword()}
 
   @type opt() :: {:retries, non_neg_integer()}
 
@@ -61,15 +61,22 @@ defmodule Circuits.I2C do
   documentation for the device or on a schematic. Another option is to call
   `Circuits.I2C.bus_names/0` to list them for you.
 
-  I2c buses may be opened more than once. There is no need to share an I2C bus
-  reference between modules.
+  The same I2C bus may be opened more than once. There is no need to share
+  it between modules.
 
-  On success, this returns a reference to the I2C bus.  Use the reference in
-  subsequent calls to read and write I2C devices
+  On success, this returns a `Circuits.I2C.Bus.t()` struct for accessing the
+  I2C bus. Use this in subsequent calls to read and write I2C devices.
+
+  Options depend on the backend. The following are for the I2CDev (default)
+  backend:
+
+  * `:retries` - the default number of retries to automatically do on reads
+    and writes (defaults to no retries)
   """
-  @spec open(binary() | charlist()) :: {:ok, bus()} | {:error, term()}
-  def open(bus_name) do
-    Nif.open(to_string(bus_name))
+  @spec open(String.t(), keyword()) :: {:ok, Bus.t()} | {:error, term()}
+  def open(bus_name, options \\ []) when is_binary(bus_name) do
+    {module, default_options} = default_backend()
+    module.open(bus_name, Keyword.merge(default_options, options))
   end
 
   @doc """
@@ -79,19 +86,17 @@ defmodule Circuits.I2C do
 
   * `:retries` - number of retries before failing (defaults to no retries)
   """
-  @spec read(bus(), address(), pos_integer(), [opt()]) :: {:ok, binary()} | {:error, term()}
-  def read(i2c_bus, address, bytes_to_read, opts \\ []) do
-    retries = Keyword.get(opts, :retries, 0)
-
-    Nif.read(i2c_bus, address, bytes_to_read, retries)
+  @spec read(Bus.t(), address(), pos_integer(), [opt()]) :: {:ok, binary()} | {:error, term()}
+  def read(bus, address, bytes_to_read, opts \\ []) do
+    Bus.read(bus, address, bytes_to_read, opts)
   end
 
   @doc """
   Initiate a read transaction and raise on error
   """
-  @spec read!(bus(), address(), pos_integer(), [opt()]) :: binary()
-  def read!(i2c_bus, address, bytes_to_read, opts \\ []) do
-    unwrap_or_raise(read(i2c_bus, address, bytes_to_read, opts))
+  @spec read!(Bus.t(), address(), pos_integer(), [opt()]) :: binary()
+  def read!(bus, address, bytes_to_read, opts \\ []) do
+    unwrap_or_raise(read(bus, address, bytes_to_read, opts))
   end
 
   @doc """
@@ -101,11 +106,9 @@ defmodule Circuits.I2C do
 
   * `:retries` - number of retries before failing (defaults to no retries)
   """
-  @spec write(bus(), address(), iodata(), [opt()]) :: :ok | {:error, term()}
-  def write(i2c_bus, address, data, opts \\ []) do
-    retries = Keyword.get(opts, :retries, 0)
-
-    Nif.write(i2c_bus, address, data, retries)
+  @spec write(Bus.t(), address(), iodata(), [opt()]) :: :ok | {:error, term()}
+  def write(bus, address, data, opts \\ []) do
+    Bus.write(bus, address, data, opts)
   end
 
   @doc """
@@ -115,9 +118,9 @@ defmodule Circuits.I2C do
 
   * `:retries` - number of retries before failing (defaults to no retries)
   """
-  @spec write!(bus(), address(), iodata(), [opt()]) :: :ok
-  def write!(i2c_bus, address, data, opts \\ []) do
-    unwrap_or_raise_ok(write(i2c_bus, address, data, opts))
+  @spec write!(Bus.t(), address(), iodata(), [opt()]) :: :ok
+  def write!(bus, address, data, opts \\ []) do
+    unwrap_or_raise_ok(write(bus, address, data, opts))
   end
 
   @doc """
@@ -135,12 +138,10 @@ defmodule Circuits.I2C do
 
   * `:retries` - number of retries before failing (defaults to no retries)
   """
-  @spec write_read(bus(), address(), iodata(), pos_integer(), [opt()]) ::
+  @spec write_read(Bus.t(), address(), iodata(), pos_integer(), [opt()]) ::
           {:ok, binary()} | {:error, term()}
-  def write_read(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
-    retries = Keyword.get(opts, :retries, 0)
-
-    Nif.write_read(i2c_bus, address, write_data, bytes_to_read, retries)
+  def write_read(bus, address, write_data, bytes_to_read, opts \\ []) do
+    Bus.write_read(bus, address, write_data, bytes_to_read, opts)
   end
 
   @doc """
@@ -150,17 +151,17 @@ defmodule Circuits.I2C do
 
   * `:retries` - number of retries before failing (defaults to no retries)
   """
-  @spec write_read!(bus(), address(), iodata(), pos_integer(), [opt()]) :: binary()
-  def write_read!(i2c_bus, address, write_data, bytes_to_read, opts \\ []) do
-    unwrap_or_raise(write_read(i2c_bus, address, write_data, bytes_to_read, opts))
+  @spec write_read!(Bus.t(), address(), iodata(), pos_integer(), [opt()]) :: binary()
+  def write_read!(bus, address, write_data, bytes_to_read, opts \\ []) do
+    unwrap_or_raise(write_read(bus, address, write_data, bytes_to_read, opts))
   end
 
   @doc """
   close the I2C bus
   """
-  @spec close(bus()) :: :ok
-  def close(i2c_bus) do
-    Nif.close(i2c_bus)
+  @spec close(Bus.t()) :: :ok
+  def close(bus) do
+    Bus.close(bus)
   end
 
   @doc """
@@ -174,17 +175,10 @@ defmodule Circuits.I2C do
   ["i2c-1"]
   ```
   """
-  @spec bus_names() :: [binary()]
+  @spec bus_names() :: [String.t()]
   def bus_names() do
-    case Nif.info() do
-      %{name: :stub} ->
-        # Return a hardcoded set of I2C bus names for test purposes
-        ["i2c-test-0", "i2c-test-1"]
-
-      _ ->
-        Path.wildcard("/dev/i2c-*")
-        |> Enum.map(fn p -> String.replace_prefix(p, "/dev/", "") end)
-    end
+    {m, o} = default_backend()
+    m.bus_names(o)
   end
 
   @doc """
@@ -205,19 +199,19 @@ defmodule Circuits.I2C do
   converted the list to an Erlang string. Run `i v()` to get information about
   the return value and look at the raw string representation for addresses.
 
-  If you already have a reference to an open device, then you may pass its
-  `reference` to `detect_devices/1` instead.
+  If you already have opened an I2C bus, then you may pass it to `detect_devices/1`
+  instead.
   """
-  @spec detect_devices(bus() | binary()) :: [address()] | {:error, term()}
-  def detect_devices(i2c_bus) when is_reference(i2c_bus) do
-    Enum.filter(0x03..0x77, &device_present?(i2c_bus, &1))
+  @spec detect_devices(Bus.t() | binary()) :: [address()] | {:error, term()}
+  def detect_devices(bus) when is_struct(bus) do
+    Enum.filter(0x03..0x77, &device_present?(bus, &1))
   end
 
   def detect_devices(bus_name) when is_binary(bus_name) do
     case open(bus_name) do
-      {:ok, i2c_bus} ->
-        devices = detect_devices(i2c_bus)
-        close(i2c_bus)
+      {:ok, bus} ->
+        devices = detect_devices(bus)
+        Bus.close(bus)
         devices
 
       error ->
@@ -266,14 +260,16 @@ defmodule Circuits.I2C do
 
   @spec discover(binary(), [address()], present?()) :: [{binary(), address()}]
   defp discover(bus_name, possible_addresses, present?) when is_binary(bus_name) do
-    case open(bus_name) do
-      {:ok, i2c_bus} ->
+    {module, options} = default_backend()
+
+    case module.open(bus_name, options) do
+      {:ok, bus} ->
         result =
           possible_addresses
-          |> Enum.filter(fn address -> present?.(i2c_bus, address) end)
+          |> Enum.filter(fn address -> present?.(bus, address) end)
           |> Enum.map(&{bus_name, &1})
 
-        close(i2c_bus)
+        close(bus)
         result
 
       {:error, reason} ->
@@ -330,7 +326,7 @@ defmodule Circuits.I2C do
   that it does perform an I2C read on the specified address and this may cause
   some devices to actually do something.
   """
-  @spec device_present?(bus(), address()) :: boolean()
+  @spec device_present?(Bus.t(), address()) :: boolean()
   def device_present?(bus, address) do
     cond do
       address in 0x30..0x37 -> probe_read(bus, address)
@@ -348,6 +344,17 @@ defmodule Circuits.I2C do
 
   This may be helpful when debugging I2C issues.
   """
-  @spec info() :: map()
-  defdelegate info(), to: Nif
+  @spec info(backend() | nil) :: map()
+  def info(backend \\ nil)
+
+  def info(nil), do: info(default_backend())
+  def info({backend, _options}), do: backend.info()
+
+  defp default_backend() do
+    case Application.get_env(:circuits_i2c, :default_backend) do
+      nil -> {Circuits.I2C.NilBackend, []}
+      m when is_atom(m) -> {m, []}
+      {m, o} = value when is_atom(m) and is_list(o) -> value
+    end
+  end
 end

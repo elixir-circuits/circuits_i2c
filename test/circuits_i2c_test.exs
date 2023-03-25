@@ -14,23 +14,22 @@ defmodule Circuits.I2CTest do
     assert is_list(names)
     assert "i2c-test-0" in names
     assert "i2c-test-1" in names
+    assert "i2c-flaky" in names
   end
 
-  test "can open buses" do
-    {:ok, i2c} = I2C.open("i2c-test-0")
-    assert is_reference(i2c)
-    I2C.close(i2c)
-
-    {:ok, i2c} = I2C.open("i2c-test-1")
-    assert is_reference(i2c)
-    I2C.close(i2c)
+  test "can open all buses" do
+    for bus_name <- I2C.bus_names() do
+      {:ok, i2c} = I2C.open(bus_name)
+      assert %Circuits.I2C.I2CDev{} = i2c
+      I2C.close(i2c)
+    end
   end
 
   test "error when opening unknown bus" do
     assert {:error, :bus_not_found} == I2C.open("bad-i2c-bus")
   end
 
-  test "detects stub devices" do
+  test "detects i2c_dev_test I2C devices" do
     # See hal_stub.c for fake devices
     assert [0x10] == I2C.detect_devices("i2c-test-0")
     assert [0x20] == I2C.detect_devices("i2c-test-1")
@@ -53,7 +52,7 @@ defmodule Circuits.I2CTest do
   test "discover/2" do
     ids = [0x10, 0x20]
 
-    # Device 0x10 returns 0 and device 0x20 returns 0xff from the stub
+    # Device 0x10 returns 0 and device 0x20 returns 0xff from the i2c_dev_test backend
     assert [{"i2c-test-0", 0x10}] == I2C.discover(ids, &i2c_returns(&1, &2, <<0x10>>))
     assert [{"i2c-test-1", 0x20}] == I2C.discover(ids, &i2c_returns(&1, &2, <<0x20>>))
   end
@@ -76,5 +75,13 @@ defmodule Circuits.I2CTest do
 
   defp i2c_returns(bus, address, what) do
     I2C.read(bus, address, 1) == {:ok, what}
+  end
+
+  test "info/0" do
+    info = Circuits.I2C.info()
+
+    assert is_map(info)
+    assert info.backend == Circuits.I2C.I2CDev
+    assert info.test?
   end
 end
