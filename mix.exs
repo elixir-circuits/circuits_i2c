@@ -17,6 +17,8 @@ defmodule Circuits.I2C.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       make_targets: ["all"],
       make_clean: ["clean"],
+      make_precompiler: {:nif, CCPrecompiler},
+      make_precompiler_url: "#{@source_url}/releases/download/v#{@version}/@{artefact_filename}",
       docs: docs(),
       aliases: [compile: [&set_make_env/1, "compile"], format: [&format_c/1, "format"]],
       start_permanent: Mix.env() == :prod,
@@ -45,6 +47,7 @@ defmodule Circuits.I2C.MixProject do
     %{
       files: [
         "CHANGELOG.md",
+        "checksum.exs",
         "c_src/*.[ch]",
         "c_src/linux/*.h",
         "c_src/compat/linux/*.h",
@@ -63,6 +66,8 @@ defmodule Circuits.I2C.MixProject do
 
   defp deps() do
     [
+      {:cc_precompiler, "~> 0.1.0", runtime: false},
+
       {:ex_doc, "~> 0.22", only: :docs, runtime: false},
       {:credo, "~> 1.6", only: :dev, runtime: false},
       {:credo_binary_patterns, "~> 0.2.2", only: :dev, runtime: false},

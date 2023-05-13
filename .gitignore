@@ -25,3 +25,6 @@ circuits_i2c-*.tar
 # Ignore C object files and executables
 /priv
 *.o
+
+# Ignore generated checksums file
+/checksum.exs
