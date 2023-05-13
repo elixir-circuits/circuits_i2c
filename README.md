@@ -166,7 +166,7 @@ Please share other examples if you have them.
 
 No. This only runs on Linux-based boards. If you're interested in controlling an
 Arduino from a computer that can run Elixir, check out
-[nerves_uart](https://hex.pm/packages/nerves_uart) for communicating via the
+[circuits_uart](https://hex.pm/packages/circuits_uart) for communicating via the
 Arduino's serial connection or
 [firmata](https://github.com/mobileoverlord/firmata) for communication using the
 Arduino's Firmata protocol.
