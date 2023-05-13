@@ -4,10 +4,24 @@
 [![API docs](https://img.shields.io/hexpm/v/circuits_i2c.svg?label=hexdocs "API docs")](https://hexdocs.pm/circuits_i2c/Circuits.I2C.html)
 [![CircleCI](https://circleci.com/gh/elixir-circuits/circuits_i2c.svg?style=svg)](https://circleci.com/gh/elixir-circuits/circuits_i2c)
 
-`Circuits.I2C` lets you communicate with hardware devices using the I2C
-protocol.
+`Circuits.I2C` lets you communicate with hardware devices using the I2C protocol.
 
-If you're coming from `Circuits.I2C` v1.0 or Elixir/ALE, check out our [porting guide](PORTING.md).
+*This is the v2.0 development branch. It's not ready yet. Most users will want
+to follow the [maint-v1.x branch](https://github.com/elixir-circuits/circuits_i2c/tree/maint-v1.x).*
+
+`Circuits.I2C` v2.0  is an almost backwards compatible update to `Circuits.I2C`
+v1.x. Here's what's new:
+
+* Linux or Nerves are no longer required. In fact, the NIF supporting them won't
+  be compiled if you don't want it.
+* Develop using simulated I2C devices with
+  [CircuitsSim](https://github.com/elixir-circuits/circuits_sim)
+* Use USB->I2C adapters for development on your laptop (Coming soon)
+
+If you've used `Circuits.I2C` v1.x, nearly all of your code will be the same. If
+you're a library author, we'd appreciate if you could try this out and update
+your `:circuits_i2c` dependency to allow v2.0. Details can be found in our
+[porting guide](PORTING.md).
 
 ## Getting started on Nerves and Linux
 
