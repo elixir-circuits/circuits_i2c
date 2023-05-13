@@ -7,6 +7,10 @@
 `Circuits.I2C` lets you communicate with hardware devices using the I2C
 protocol.
 
+*This is the v1 maintenance branch. This is the version you want for production
+use now.  To follow v2.0 development, see the [circuits_i2c v2.0
+branch](https://github.com/elixir-circuits/circuits_i2c/tree/v2.0)*
+
 If you're coming from Elixir/ALE, check out our [porting guide](PORTING.md).
 
 ## Getting started
