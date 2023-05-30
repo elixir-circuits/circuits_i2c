@@ -1,5 +1,26 @@
 # Changelog
 
+## v2.0.0-pre.0 - 2023-05-30
+
+This is a major update to Circuits.I2C that removes the requirement to use
+Nerves or Linux. The API is almost the same and the default is to compile and
+use the Linux backend, so changes may not be needed.
+
+This is a prerelease so APIs may still change before the v2.0.0 release.
+
+* Changes
+  * Support alternative backends for different operating systems or for
+    simulated hardware
+  * For the Linux NIF, support passing a `:retry` count to `Circuits.I2C.open/2`
+    that will apply to all I2C operations. This simplifies dealing with devices
+    with flaky connections.
+  * Defer loading the Linux NIF until `Circuits.I2C.open/2` is called
+  * Return error on `Circuits.I2C.open/2` if the device isn't a real I2C device.
+    This was previously detected on the first operation.
+  * For the Linux NIF, return errno numbers rather than their `strerr` strings
+    when they're unknown. It turned out that the strings could be more confusing
+    that the numbers.
+
 ## v1.2.2 - 2023-03-24
 
 * Fixes
