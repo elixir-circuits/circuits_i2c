@@ -116,6 +116,8 @@ struct I2cNifPriv {
 static ERL_NIF_TERM atom_ok;
 static ERL_NIF_TERM atom_error;
 static ERL_NIF_TERM atom_nak;
+static ERL_NIF_TERM atom_timeout;
+static ERL_NIF_TERM atom_retry;
 
 static void i2c_dtor(ErlNifEnv *env, void *obj)
 {
@@ -152,6 +154,8 @@ static int i2c_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM info)
     atom_ok = enif_make_atom(env, "ok");
     atom_error = enif_make_atom(env, "error");
     atom_nak = enif_make_atom(env, "i2c_nak");
+    atom_timeout = enif_make_atom(env, "timeout");
+    atom_retry = enif_make_atom(env, "retry");
 
     *priv_data = priv;
     return 0;
@@ -173,8 +177,22 @@ static ERL_NIF_TERM enif_make_errno_error(ErlNifEnv *env)
         reason = atom_nak;
         break;
 #endif
+    case ETIMEDOUT:
+        // I2C bus hung. On some platforms, Linux can try to recover it.
+        reason = atom_timeout;
+        break;
+
+    case EAGAIN:
+        // I2C bus hung and an attempt is being made to recover it.
+        reason = atom_retry;
+        break;
+
     case ENOENT:
         reason = enif_make_atom(env, "bus_not_found");
+        break;
+
+    case EOPNOTSUPP:
+        reason = enif_make_atom(env, "not_supported");
         break;
 
     default:
