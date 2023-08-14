@@ -6,8 +6,7 @@
 
 `Circuits.I2C` lets you communicate with hardware devices using the I2C protocol.
 
-*This is the v2.0 development branch. It's not ready yet. Most users will want
-to follow the [maint-v1.x branch](https://github.com/elixir-circuits/circuits_i2c/tree/maint-v1.x).*
+*This is the v2.0 branch. Circuits.I2C v1.x is still maintained in the [maint-v1.x branch](https://github.com/elixir-circuits/circuits_i2c/tree/maint-v1.x).*
 
 `Circuits.I2C` v2.0  is an almost backwards compatible update to `Circuits.I2C`
 v1.x. Here's what's new:

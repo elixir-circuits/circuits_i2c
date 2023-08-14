@@ -1,12 +1,10 @@
 # Changelog
 
-## v2.0.0-pre.0 - 2023-05-30
+## v2.0.0 - 2023-08-14
 
 This is a major update to Circuits.I2C that removes the requirement to use
 Nerves or Linux. The API is almost the same and the default is to compile and
 use the Linux backend, so changes may not be needed.
-
-This is a prerelease so APIs may still change before the v2.0.0 release.
 
 * Changes
   * Support alternative backends for different operating systems or for
