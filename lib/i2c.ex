@@ -185,10 +185,6 @@ defmodule Circuits.I2C do
   Scan the I2C bus for devices by performing a read at each device address and
   returning a list of device addresses that respond.
 
-  WARNING: This is intended to be a debugging aid. Reading bytes from devices
-  can advance internal state machines and might cause them to get out of sync
-  with other code.
-
   ```elixir
   iex> Circuits.I2C.detect_devices("i2c-1")
   [4]
@@ -199,8 +195,13 @@ defmodule Circuits.I2C do
   converted the list to an Erlang string. Run `i v()` to get information about
   the return value and look at the raw string representation for addresses.
 
-  If you already have opened an I2C bus, then you may pass it to `detect_devices/1`
-  instead.
+  > #### Warning {: .warning}
+  > This is intended to be a debugging aid. Reading bytes from devices can
+  > advance internal state machines and might cause them to get out of sync
+  > with other code.
+
+  If you already have opened an I2C bus, then pass that to `detect_devices/1`
+  instead of the string name.
   """
   @spec detect_devices(Bus.t() | binary()) :: [address()] | {:error, term()}
   def detect_devices(bus) when is_struct(bus) do
