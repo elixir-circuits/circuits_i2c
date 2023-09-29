@@ -64,6 +64,7 @@ defmodule Circuits.I2C.MixProject do
     [
       {:ex_doc, "~> 0.22", only: :docs, runtime: false},
       {:credo, "~> 1.6", only: :dev, runtime: false},
+      {:credo_binary_patterns, "~> 0.2.2", only: :dev, runtime: false},
       {:dialyxir, "~> 1.2", only: :dev, runtime: false},
       {:elixir_make, "~> 0.6", runtime: false}
     ]
