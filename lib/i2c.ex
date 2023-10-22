@@ -35,6 +35,11 @@ defmodule Circuits.I2C do
 
   @type opt() :: {:retries, non_neg_integer()}
 
+  @typedoc """
+  Connection to a real or virtual I2C controller
+  """
+  @type bus() :: Bus.t()
+
   defmacrop unwrap_or_raise(call) do
     quote do
       case unquote(call) do
