@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.1 - 2023-10-22
+
+* Changes
+  * Add `Circuits.I2C.bus()` type back to fix a dialyzer warning on projects
+    that support both Circuits.I2C 1.0 and 2.0.
+
 ## v2.0.0 - 2023-08-14
 
 This is a major update to Circuits.I2C that removes the requirement to use
