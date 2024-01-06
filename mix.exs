@@ -9,7 +9,7 @@ defmodule Circuits.I2C.MixProject do
     [
       app: :circuits_i2c,
       version: @version,
-      elixir: "~> 1.10",
+      elixir: "~> 1.11",
       description: @description,
       package: package(),
       source_url: @source_url,
