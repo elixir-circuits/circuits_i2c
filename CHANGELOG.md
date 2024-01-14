@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.0.2 - 2024-01-14
+
+* Changes
+  * Fix race condition when multiple processes load the NIF simultaneously that
+    would cause an unnecessary crash.
+  * Bump minimum supported version of Elixir to 1.11 since no longer testing
+    with it due to a dependency issue.
+
 ## v2.0.1 - 2023-10-22
 
 * Changes
