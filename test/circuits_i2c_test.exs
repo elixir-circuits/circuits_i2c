@@ -84,4 +84,20 @@ defmodule Circuits.I2CTest do
     assert info.backend == Circuits.I2C.I2CDev
     assert info.test?
   end
+
+  test "racing to load the NIF" do
+    # Make sure the NIF isn't loaded
+    _ = :code.delete(Circuits.I2C.Nif)
+    _ = :code.purge(Circuits.I2C.Nif)
+
+    # Try to hit the race by having 32 processes race to load the NIF
+    tasks =
+      for _ <- 0..31 do
+        Task.async(fn ->
+          _ = Circuits.I2C.info()
+        end)
+      end
+
+    Enum.each(tasks, &Task.await/1)
+  end
 end

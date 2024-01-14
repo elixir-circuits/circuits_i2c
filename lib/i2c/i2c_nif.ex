@@ -1,15 +1,19 @@
 defmodule Circuits.I2C.Nif do
   @moduledoc false
 
-  defp load_nif() do
+  defp load_nif_and_apply(fun, args) do
     nif_binary = Application.app_dir(:circuits_i2c, "priv/i2c_nif")
-    :erlang.load_nif(to_charlist(nif_binary), 0)
+
+    # Optimistically load the NIF. Handle the possible race.
+    case :erlang.load_nif(to_charlist(nif_binary), 0) do
+      :ok -> apply(__MODULE__, fun, args)
+      {:error, {:reload, _}} -> apply(__MODULE__, fun, args)
+      error -> error
+    end
   end
 
   def open(device) do
-    with :ok <- load_nif() do
-      apply(__MODULE__, :open, [device])
-    end
+    load_nif_and_apply(:open, [device])
   end
 
   def read(_ref, _address, _count, _retries), do: :erlang.nif_error(:nif_not_loaded)
@@ -21,7 +25,6 @@ defmodule Circuits.I2C.Nif do
   def close(_ref), do: :erlang.nif_error(:nif_not_loaded)
 
   def info() do
-    :ok = load_nif()
-    apply(__MODULE__, :info, [])
+    load_nif_and_apply(:info, [])
   end
 end
