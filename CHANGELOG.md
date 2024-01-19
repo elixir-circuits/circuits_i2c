@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.0.3 - 2024-01-18
+
+* Bug fixes
+  * Remove lazy NIF loading. There's an unexplained segfault in a small example
+    program that uses the same strategy. Even though it wasn't reproduceable
+    here, it's not worth the risk. Thanks to @pojiro for investigating.
+
 ## v2.0.2 - 2024-01-14
 
 * Changes
