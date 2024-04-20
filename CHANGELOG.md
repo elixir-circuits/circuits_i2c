@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.4 - 2024-04-20
+
+* Improvements
+  * Improve target detection so that setting `MIX_TARGET` when not
+    crosscompiling does the expected thing on MacOS.
+
 ## v2.0.3 - 2024-01-18
 
 * Bug fixes
