@@ -59,8 +59,8 @@ endif
 endif
 
 # Set Erlang-specific compile and linker flags
-ERL_CFLAGS ?= -I$(ERL_EI_INCLUDE_DIR)
-ERL_LDFLAGS ?= -L$(ERL_EI_LIBDIR) -lei
+ERL_CFLAGS ?= -I"$(ERL_EI_INCLUDE_DIR)"
+ERL_LDFLAGS ?= -L"$(ERL_EI_LIBDIR)" -lei
 
 HEADERS =$(wildcard c_src/*.h)
 OBJ = $(SRC:c_src/%.c=$(BUILD)/%.o)
