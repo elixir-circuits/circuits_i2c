@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.0.5 - 2024-09-08
+
+Only Elixir 1.13 and later are supported now. There are no known issues with
+using earlier versions at the moment, but it's no longer regularly checked in
+CI.
+
+* Bug fixes
+  * Fix compilation when Erlang has been installed to a directory with spaces
+
 ## v2.0.4 - 2024-04-20
 
 * Improvements
