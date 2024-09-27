@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.6 - 2024-09-27
+
+* Bug fixes
+  * Don't crash on ENXIO (errno 6) failures due to unresponsives I2C targets
+  * Add ENXIO as a known error for easier debugging next time
+
 ## v2.0.5 - 2024-09-08
 
 Only Elixir 1.13 and later are supported now. There are no known issues with
