@@ -44,7 +44,7 @@ defmodule Circuits.I2C do
     quote do
       case unquote(call) do
         {:ok, value} -> value
-        {:error, reason} -> raise "I2C failure: " <> to_string(reason)
+        {:error, reason} -> raise "I2C failure: #{inspect(reason)}"
       end
     end
   end
@@ -53,7 +53,7 @@ defmodule Circuits.I2C do
     quote do
       case unquote(call) do
         :ok -> :ok
-        {:error, reason} -> raise "I2C failure: " <> to_string(reason)
+        {:error, reason} -> raise "I2C failure: #{inspect(reason)}"
       end
     end
   end
@@ -279,7 +279,7 @@ defmodule Circuits.I2C do
         result
 
       {:error, reason} ->
-        raise "I2C discovery error: Opening #{bus_name} failed with #{reason}"
+        raise "I2C discovery error: Opening #{bus_name} failed with #{inspect(reason)}"
     end
   end
 
