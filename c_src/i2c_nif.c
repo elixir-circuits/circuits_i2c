@@ -207,6 +207,11 @@ static ERL_NIF_TERM enif_make_errno_error(ErlNifEnv *env)
         reason = enif_make_atom(env, "not_supported");
         break;
 
+    case ENXIO:
+        // Most likely that the device didn't answer, but check dmesg
+        reason = enif_make_atom(env, "enxio");
+        break;
+
     default:
         // These errors aren't that helpful, so if they happen, please report
         // or update this code to provide a better reason.
