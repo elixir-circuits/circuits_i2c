@@ -55,6 +55,13 @@ jobs:
           paths:
             - _build
             - deps
+  publish:
+    docker:
+      - image: hexpm/elixir:latest
+    steps:
+      - checkout
+      - run: mix deps.get
+      - run: mix hex.publish --yes
 
 workflows:
   checks:
@@ -64,3 +71,11 @@ workflows:
           matrix:
             parameters:
               tag: *tags
+      - publish:
+          requires:
+            - build-test
+          filters:
+            tags:
+              only: /^v\d+\.\d+\.\d+$/ # Only version tags
+            branches:
+              ignore: /.*/
