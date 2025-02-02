@@ -51,6 +51,10 @@ defmodule Circuits.I2C.I2CDev do
   def open(bus_name, options) do
     retries = Keyword.get(options, :retries, 0)
 
+    if not (is_integer(retries) and retries >= 0) do
+      raise ArgumentError, "retries must be a non-negative integer"
+    end
+
     with {:ok, ref, flags} <- Nif.open(bus_name) do
       {:ok, %__MODULE__{ref: ref, flags: flags, retries: retries}}
     end

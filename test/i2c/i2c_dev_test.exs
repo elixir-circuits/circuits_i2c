@@ -35,6 +35,11 @@ defmodule Circuits.I2CDevTest do
       assert {:ok, <<0x30, 0x31, 0x32, 0x33, 0x34>>} == Bus.read(i2c, 0x30, 5, [])
       Bus.close(i2c)
     end
+
+    test "bad retries caught" do
+      assert_raise ArgumentError, fn -> I2CDev.open("i2c-test-0", retries: -1) end
+      assert_raise ArgumentError, fn -> I2CDev.open("i2c-test-0", retries: nil) end
+    end
   end
 
   describe "read/4" do
