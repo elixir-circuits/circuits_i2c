@@ -10,7 +10,7 @@ SPDX-FileCopyrightText = "2014 Frank Hunleth"
 SPDX-License-Identifier = "CC-BY-4.0"
 
 [[annotations]]
-path = [".gitignore", ".github/dependabot.yml", ".circleci/config.yml"]
+path = [".gitignore", ".github/dependabot.yml", ".circleci/config.yml", "REUSE.toml"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "None"
 SPDX-License-Identifier = "CC0-1.0"
