@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.7 - 2025-02-02
+
+* Improvements
+  * Raise earlier when bad values are passed for the `:retries` option
+  * Update copyrights and license info for REUSE compliance
+
 ## v2.0.6 - 2024-09-27
 
 * Bug fixes
