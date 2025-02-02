@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2018 Frank Hunleth
+#
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule Circuits.I2C do
   @moduledoc """
   `Circuits.I2C` lets you communicate with hardware devices using the I2C

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Frank Hunleth
+#
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule Circuits.I2C.Backend do
   @moduledoc """
   Backends provide the connection to the real or virtual I2C controller

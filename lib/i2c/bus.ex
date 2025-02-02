@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Frank Hunleth
+#
+# SPDX-License-Identifier: Apache-2.0
+
 defprotocol Circuits.I2C.Bus do
   @moduledoc """
   A bus is the connection to a real or virtual I2C controller

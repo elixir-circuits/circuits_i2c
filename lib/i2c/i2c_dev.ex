@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Frank Hunleth
+#
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule Circuits.I2C.I2CDev do
   @moduledoc """
   Circuits.I2C backend for the Linux i2c-dev interface

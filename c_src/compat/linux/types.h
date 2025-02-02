@@ -1,4 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+/* SPDX-FileCopyrightText: None */
+/* SPDX-License-Identifier: GPL-2.0-or-later WITH Linux-syscall-note */
 #ifndef _LINUX_TYPES_H
 #define _LINUX_TYPES_H
 

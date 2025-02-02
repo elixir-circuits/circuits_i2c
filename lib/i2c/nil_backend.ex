@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Frank Hunleth
+#
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule Circuits.I2C.NilBackend do
   @moduledoc """
   Circuits.I2C backend when nothing else is available

@@ -3,6 +3,7 @@
 [![Hex version](https://img.shields.io/hexpm/v/circuits_i2c.svg "Hex version")](https://hex.pm/packages/circuits_i2c)
 [![API docs](https://img.shields.io/hexpm/v/circuits_i2c.svg?label=hexdocs "API docs")](https://hexdocs.pm/circuits_i2c/Circuits.I2C.html)
 [![CircleCI](https://circleci.com/gh/elixir-circuits/circuits_i2c.svg?style=svg)](https://circleci.com/gh/elixir-circuits/circuits_i2c)
+[![REUSE status](https://api.reuse.software/badge/github.com/elixir-circuits/circuits_i2c)](https://api.reuse.software/info/github.com/elixir-circuits/circuits_i2c)
 
 `Circuits.I2C` lets you communicate with hardware devices using the I2C protocol.
 
@@ -205,4 +206,15 @@ Arduino's Firmata protocol.
 
 ## License
 
-Code from the library is licensed under the Apache License, Version 2.0.
+All original source code in this project is licensed under Apache-2.0.
+
+Additionally, this project follows the [REUSE recommendations](https://reuse.software)
+and labels so that licensing and copyright are clear at the file level.
+
+Exceptions to Apache-2.0 licensing are:
+
+* Linux header files included for convenience under GPL-2.0-or-later WITH
+  Linux-syscall-note
+* Configuration and data files are licensed under CC0-1.0
+* Documentation files are CC-BY-4.0
+* Erlang Embedded board images are Solderpad Hardware License v0.51.

@@ -44,16 +44,17 @@ defmodule Circuits.I2C.MixProject do
   defp package do
     %{
       files: [
-        "lib",
+        "CHANGELOG.md",
         "c_src/*.[ch]",
         "c_src/linux/*.h",
         "c_src/compat/linux/*.h",
+        "lib",
+        "LICENSES",
+        "Makefile",
         "mix.exs",
-        "README.md",
         "PORTING.md",
-        "LICENSE",
-        "CHANGELOG.md",
-        "Makefile"
+        "README.md",
+        "REUSE.toml"
       ],
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => @source_url}
