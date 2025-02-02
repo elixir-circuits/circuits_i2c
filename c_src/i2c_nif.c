@@ -38,9 +38,10 @@ int test_close(int fd)
     else
         return -1;
 }
-int test_ioctl(int fd, unsigned long request, void *arg)
+int test_ioctl(int fd, unsigned long request, ...)
 {
     static int flaky = 0;
+    va_list ap;
 
     // The flaky I2C bus (0x30) works only on a retry. Reading anything besides 0x30 resets the counter.
     if (fd != 0x30)
@@ -50,11 +51,15 @@ int test_ioctl(int fd, unsigned long request, void *arg)
         return -1;
 
     if (request == I2C_FUNCS) {
-        unsigned long *funcs = (unsigned long *) arg;
+        va_start(ap, request);
+        unsigned long *funcs = va_arg(ap, unsigned long *);
+        va_end(ap);
         *funcs = 0;
         return 0;
     } else if (request == I2C_RDWR) {
-        struct i2c_rdwr_ioctl_data *data = (struct i2c_rdwr_ioctl_data *) arg;
+        va_start(ap, request);
+        struct i2c_rdwr_ioctl_data *data = va_arg(ap, struct i2c_rdwr_ioctl_data *);
+        va_end(ap);
         if (fd == 0x30) {
             // Flake out if first read or write
             if (flaky == 0) {
@@ -76,6 +81,9 @@ int test_ioctl(int fd, unsigned long request, void *arg)
             }
         }
         return data->nmsgs;
+    } else if (request == I2C_TIMEOUT) {
+        // Ignore calls to set the timeout.
+        return 0;
     } else {
         // Unknown ioctl
         return -1;
@@ -226,8 +234,10 @@ static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
 {
     struct I2cNifPriv *priv = enif_priv_data(env);
     ErlNifBinary path;
+    int timeout_ms;
 
-    if (!enif_inspect_binary(env, argv[0], &path))
+    if (!enif_inspect_binary(env, argv[0], &path) ||
+            !enif_get_int(env, argv[1], &timeout_ms))
         return enif_make_badarg(env);
 
     char devpath[32];
@@ -242,6 +252,17 @@ static ERL_NIF_TERM i2c_open(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
     if (do_ioctl(fd, I2C_FUNCS, &funcs) < 0) {
         close(fd);
         return enif_make_errno_error(env);
+    }
+
+    // Change the I2C timeout
+    if (timeout_ms >= 0) {
+        int timeout_cs = (timeout_ms + 5) / 10;
+        if (timeout_cs == 0)
+            timeout_cs = 1;
+        if (do_ioctl(fd, I2C_TIMEOUT, timeout_cs) < 0) {
+            close(fd);
+            return enif_make_errno_error(env);
+        }
     }
 
     struct I2cNifRes *i2c_nif_res = enif_alloc_resource(priv->i2c_nif_res_type, sizeof(struct I2cNifRes));
@@ -411,7 +432,7 @@ static ERL_NIF_TERM i2c_info(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]
 
 static ErlNifFunc nif_funcs[] =
 {
-    {"open", 1, i2c_open, ERL_NIF_DIRTY_JOB_IO_BOUND},
+    {"open", 2, i2c_open, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"read", 4, i2c_read, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"write", 4, i2c_write, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"write_read", 5, i2c_write_read, ERL_NIF_DIRTY_JOB_IO_BOUND},

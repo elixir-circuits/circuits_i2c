@@ -14,15 +14,14 @@ defmodule Circuits.I2C.Backend do
   Support for options is backend-specific. Backends are encouraged to
   implement the following:
 
-  * `:retries` - a number of times to attempt to retry the transaction
-    before failing
+  * `:retries` - the number of retries for this transaction
   """
-  @type options() :: keyword()
+  @type transfer_options() :: keyword()
 
   @doc """
   Return the I2C bus names on this system
 
-  No supported options
+  See backend documentation for options.
   """
   @callback bus_names(options :: keyword()) :: [binary()]
 
@@ -32,10 +31,7 @@ defmodule Circuits.I2C.Backend do
   Bus names are typically of the form `"i2c-n"` and available buses may be
   found by calling `bus_names/1`.
 
-  Options:
-
-  * `:retries` - Specify a nonnegative integer for how many times to retry
-    a failed I2C operation.
+  See `t:Circuits.I2C.open_options/0` for guidance on options.
   """
   @callback open(bus_name :: String.t(), options :: keyword()) ::
               {:ok, Bus.t()} | {:error, term()}

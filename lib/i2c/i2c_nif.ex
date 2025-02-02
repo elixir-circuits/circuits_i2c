@@ -12,7 +12,7 @@ defmodule Circuits.I2C.Nif do
     :erlang.load_nif(:code.priv_dir(:circuits_i2c) ++ ~c"/i2c_nif", 0)
   end
 
-  def open(_device), do: :erlang.nif_error(:nif_not_loaded)
+  def open(_device, _timeout), do: :erlang.nif_error(:nif_not_loaded)
   def read(_ref, _address, _count, _retries), do: :erlang.nif_error(:nif_not_loaded)
   def write(_ref, _address, _data, _retries), do: :erlang.nif_error(:nif_not_loaded)
 

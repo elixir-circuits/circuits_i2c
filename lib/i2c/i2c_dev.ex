@@ -48,8 +48,10 @@ defmodule Circuits.I2C.I2CDev do
 
   Options:
 
-  * `:retries` - Specify a nonnegative integer for how many times to retry
-    a failed I2C operation.
+  * `:retries` - the number of times to retry a transaction. I.e. 2 retries means
+    the transaction is attempted at most 3 times. Defaults to 0 retries.
+  * `:timeout` - the time in milliseconds to wait for a transaction to complete.
+    Any value <0 means to use the device driver default which is probably 1000 ms.
   """
   @impl Backend
   def open(bus_name, options) do
@@ -59,7 +61,13 @@ defmodule Circuits.I2C.I2CDev do
       raise ArgumentError, "retries must be a non-negative integer"
     end
 
-    with {:ok, ref, flags} <- Nif.open(bus_name) do
+    timeout = Keyword.get(options, :timeout, -1)
+
+    if not is_integer(timeout) do
+      raise ArgumentError, "timeout must be an integer"
+    end
+
+    with {:ok, ref, flags} <- Nif.open(bus_name, timeout) do
       {:ok, %__MODULE__{ref: ref, flags: flags, retries: retries}}
     end
   end

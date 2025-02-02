@@ -37,7 +37,30 @@ defmodule Circuits.I2C do
   """
   @type backend() :: {module(), keyword()}
 
-  @type opt() :: {:retries, non_neg_integer()}
+  @typedoc """
+  I2C open options
+
+  See I2C backend documentation, device driver caveats, and function calls in this
+  module for notes. In general,
+
+  * `:retries` - the number of times to retry a transaction. I.e. 2 retries means
+    the transaction is attempted at most 3 times. Defaults to 0 retries.
+  * `:timeout` - the time in milliseconds to wait for a transaction to complete.
+    Any value <0 means to use the device driver or hardware default. The default
+    value is -1 to avoid setting it, but it is very common for the default to be 1000 ms.
+  """
+  @type open_options() :: keyword()
+
+  @typedoc """
+  I2C transfer options
+
+  See I2C backend documentation, device driver caveats, and function calls in this
+  module for notes. In general,
+
+  * `:retries` - override the number of times to retry a transaction from what was
+    passed to `open/3`.
+  """
+  @type transfer_options() :: keyword()
 
   @typedoc """
   Connection to a real or virtual I2C controller
@@ -79,10 +102,12 @@ defmodule Circuits.I2C do
   Options depend on the backend. The following are for the I2CDev (default)
   backend:
 
-  * `:retries` - the default number of retries to automatically do on reads
-    and writes (defaults to no retries)
+  * `:retries` - the number of times to retry a transaction. I.e. 2 retries means
+    the transaction is attempted at most 3 times. Defaults to 0 retries.
+  * `:timeout` - the time in milliseconds to wait for a transaction to complete
+    or <0 to avoid setting it. Defaults to -1.
   """
-  @spec open(String.t(), keyword()) :: {:ok, Bus.t()} | {:error, term()}
+  @spec open(String.t(), open_options()) :: {:ok, Bus.t()} | {:error, term()}
   def open(bus_name, options \\ []) when is_binary(bus_name) do
     {module, default_options} = default_backend()
     module.open(bus_name, Keyword.merge(default_options, options))
@@ -91,11 +116,10 @@ defmodule Circuits.I2C do
   @doc """
   Initiate a read transaction to the I2C device at the specified `address`
 
-  Options:
-
-  * `:retries` - number of retries before failing (defaults to no retries)
+  See `t:transfer_options/0` for options, but backend may provide more.
   """
-  @spec read(Bus.t(), address(), pos_integer(), [opt()]) :: {:ok, binary()} | {:error, term()}
+  @spec read(Bus.t(), address(), pos_integer(), transfer_options()) ::
+          {:ok, binary()} | {:error, term()}
   def read(bus, address, bytes_to_read, opts \\ []) do
     Bus.read(bus, address, bytes_to_read, opts)
   end
@@ -103,7 +127,7 @@ defmodule Circuits.I2C do
   @doc """
   Initiate a read transaction and raise on error
   """
-  @spec read!(Bus.t(), address(), pos_integer(), [opt()]) :: binary()
+  @spec read!(Bus.t(), address(), pos_integer(), transfer_options()) :: binary()
   def read!(bus, address, bytes_to_read, opts \\ []) do
     unwrap_or_raise(read(bus, address, bytes_to_read, opts))
   end
@@ -111,11 +135,9 @@ defmodule Circuits.I2C do
   @doc """
   Write `data` to the I2C device at `address`.
 
-  Options:
-
-  * `:retries` - number of retries before failing (defaults to no retries)
+  See `t:transfer_options/0` for options, but backend may provide more.
   """
-  @spec write(Bus.t(), address(), iodata(), [opt()]) :: :ok | {:error, term()}
+  @spec write(Bus.t(), address(), iodata(), transfer_options()) :: :ok | {:error, term()}
   def write(bus, address, data, opts \\ []) do
     Bus.write(bus, address, data, opts)
   end
@@ -123,11 +145,9 @@ defmodule Circuits.I2C do
   @doc """
   Write `data` to the I2C device at `address` and raise on error
 
-  Options:
-
-  * `:retries` - number of retries before failing (defaults to no retries)
+  See `t:transfer_options/0` for options, but backend may provide more.
   """
-  @spec write!(Bus.t(), address(), iodata(), [opt()]) :: :ok
+  @spec write!(Bus.t(), address(), iodata(), transfer_options()) :: :ok
   def write!(bus, address, data, opts \\ []) do
     unwrap_or_raise_ok(write(bus, address, data, opts))
   end
@@ -143,11 +163,9 @@ defmodule Circuits.I2C do
   transaction will be issued that way. On the Raspberry Pi, this can be enabled
   globally with `File.write!("/sys/module/i2c_bcm2708/parameters/combined", "1")`
 
-  Options:
-
-  * `:retries` - number of retries before failing (defaults to no retries)
+  See `t:transfer_options/0` for options, but backend may provide more.
   """
-  @spec write_read(Bus.t(), address(), iodata(), pos_integer(), [opt()]) ::
+  @spec write_read(Bus.t(), address(), iodata(), pos_integer(), transfer_options()) ::
           {:ok, binary()} | {:error, term()}
   def write_read(bus, address, write_data, bytes_to_read, opts \\ []) do
     Bus.write_read(bus, address, write_data, bytes_to_read, opts)
@@ -156,11 +174,9 @@ defmodule Circuits.I2C do
   @doc """
   Write `data` to an I2C device and then immediately issue a read. Raise on errors.
 
-  Options:
-
-  * `:retries` - number of retries before failing (defaults to no retries)
+  See `t:transfer_options/0` for options, but backend may provide more.
   """
-  @spec write_read!(Bus.t(), address(), iodata(), pos_integer(), [opt()]) :: binary()
+  @spec write_read!(Bus.t(), address(), iodata(), pos_integer(), transfer_options()) :: binary()
   def write_read!(bus, address, write_data, bytes_to_read, opts \\ []) do
     unwrap_or_raise(write_read(bus, address, write_data, bytes_to_read, opts))
   end
