@@ -64,27 +64,38 @@ jobs:
             - deps
   publish:
     docker:
-      - image: hexpm/elixir:latest
+      - image: hexpm/elixir:1.18.2-erlang-27.2.1-alpine-3.21.2
+    working_directory: ~/repo
+    environment:
+      LC_ALL: C.UTF-8
     steps:
       - checkout
+      - run: apk add --no-cache build-base linux-headers
+      - run: mix local.hex --force
       - run: mix deps.get
       - run: mix hex.publish --yes
 
 workflows:
   checks:
     jobs:
-      - check-license
+      - check-license:
+          filters:
+            tags:
+              only: /.*/
       - build-test:
           name: << matrix.tag >>
           matrix:
             parameters:
               tag: *tags
+          filters:
+            tags:
+              only: /.*/
       - publish:
           requires:
             - build-test
             - check-license
           filters:
             tags:
-              only: /^v\d+\.\d+\.\d+$/ # Only version tags
+              only: /^v.*/
             branches:
               ignore: /.*/
