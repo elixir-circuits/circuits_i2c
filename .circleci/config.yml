@@ -70,10 +70,21 @@ jobs:
       LC_ALL: C.UTF-8
     steps:
       - checkout
-      - run: apk add --no-cache build-base linux-headers
-      - run: mix local.hex --force
-      - run: mix deps.get
-      - run: mix hex.publish --yes
+      - run:
+          name: Install packages
+          command: |
+            apk add --no-cache build-base linux-headers github-cli
+      - run:
+          name: Publish GitHub release
+          command: |
+            sed -n "/^## $CIRCLE_TAG/,/^## /p" CHANGELOG.md | sed '1d; /^## /d' > RELEASE_NOTES
+            gh release create $CIRCLE_TAG --notes "$(cat RELEASE_NOTES)"
+      - run:
+          name: Publish to hex.pm
+          command: |
+            mix local.hex --force
+            mix deps.get
+            mix hex.publish --yes
 
 workflows:
   checks:
