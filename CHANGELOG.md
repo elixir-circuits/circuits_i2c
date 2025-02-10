@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.1.0 - 2025-02-10
+
+* New features
+  * Support setting a timeout on I2C bus transactions. Support for this depends
+    on the backend and drivers, but it's at least possible to set it. The
+    default is usually 1 second with Linux.
+
+* Improvements
+  * Various documentation and spec cleanup
+
 ## v2.0.7 - 2025-02-02
 
 * Improvements
