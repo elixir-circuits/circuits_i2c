@@ -182,7 +182,7 @@ defmodule Circuits.I2C do
   end
 
   @doc """
-  close the I2C bus
+  Close the I2C bus
   """
   @spec close(Bus.t()) :: :ok
   def close(bus) do
@@ -190,10 +190,11 @@ defmodule Circuits.I2C do
   end
 
   @doc """
-  Return a list of available I2C bus names.  If nothing is returned, it's
-  possible that the kernel driver for that I2C bus is not enabled or the
-  kernel's device tree is not configured. On Raspbian, run `raspi-config` and
-  look in the advanced options.
+  Return a list of available I2C bus names
+
+  If nothing is returned, it's possible that the kernel driver for that I2C bus
+  is not enabled or the kernel's device tree is not configured. On Raspbian,
+  run `raspi-config` and look in the advanced options.
 
   ```elixir
   iex> Circuits.I2C.bus_names()
@@ -207,8 +208,10 @@ defmodule Circuits.I2C do
   end
 
   @doc """
-  Scan the I2C bus for devices by performing a read at each device address and
-  returning a list of device addresses that respond.
+  Scan the I2C bus for devices
+
+  Since there's no official way of enumerating I2C devices, this attempts to
+  figure out what's on the bus by seeing what devices respond.
 
   ```elixir
   iex> Circuits.I2C.detect_devices("i2c-1")
