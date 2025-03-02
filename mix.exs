@@ -52,12 +52,17 @@ defmodule Circuits.I2C.MixProject do
         "LICENSES",
         "Makefile",
         "mix.exs",
+        "NOTICE",
         "PORTING.md",
         "README.md",
         "REUSE.toml"
       ],
       licenses: ["Apache-2.0"],
-      links: %{"GitHub" => @source_url}
+      links: %{
+        "GitHub" => @source_url,
+        "REUSE Compliance" =>
+          "https://api.reuse.software/info/github.com/elixir-circuits/circuits_i2c"
+      }
     }
   end
 

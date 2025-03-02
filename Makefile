@@ -1,4 +1,6 @@
-# SPDX-FileCopyrightText: 2018 Frank Hunleth
+# SPDX-FileCopyrightText: 2014 Frank Hunleth
+# SPDX-FileCopyrightText: 2016 Connor Rigby
+# SPDX-FileCopyrightText: 2018 Matt Ludwigs
 #
 # SPDX-License-Identifier: Apache-2.0
 
