@@ -1,25 +1,31 @@
 version = 1
-SPDX-PackageName = "circuits_i2c"
-SPDX-PackageSupplier = "Frank Hunleth <fhunleth@troodon-software.com>"
-SPDX-PackageDownloadLocation = "https://github.com/elixir-circuits/circuits_i2c"
 
 [[annotations]]
-path = ["README.md", "CHANGELOG.md", "PORTING.md", "RELEASE.md"]
+path = [
+ ".circleci/config.yml",
+ ".credo.exs",
+ ".formatter.exs",
+ ".github/dependabot.yml",
+ ".gitignore",
+ "CHANGELOG.md",
+ "NOTICE",
+ "PORTING.md",
+ "RELEASE.md",
+ "REUSE.toml",
+ "mix.exs",
+ "mix.lock"
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = [
+ "README.md"
+]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2014 Frank Hunleth"
 SPDX-License-Identifier = "CC-BY-4.0"
-
-[[annotations]]
-path = [".gitignore", ".github/dependabot.yml", ".circleci/config.yml", "REUSE.toml"]
-precedence = "aggregate"
-SPDX-FileCopyrightText = "None"
-SPDX-License-Identifier = "CC0-1.0"
-
-[[annotations]]
-path = [".formatter.exs", "mix.lock", ".credo.exs", "mix.exs"]
-precedence = "aggregate"
-SPDX-FileCopyrightText = "None"
-SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
 path = ["c_src/linux/i2c-dev.h"]
