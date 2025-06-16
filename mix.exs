@@ -23,13 +23,12 @@ defmodule Circuits.I2C.MixProject do
       dialyzer: [
         flags: [:missing_return, :extra_return, :unmatched_returns, :error_handling, :underspecs]
       ],
-      deps: deps(),
-      preferred_cli_env: %{
-        docs: :docs,
-        "hex.publish": :docs,
-        "hex.build": :docs
-      }
+      deps: deps()
     ]
+  end
+
+  def cli do
+    [preferred_envs: %{docs: :docs, "hex.publish": :docs, "hex.build": :docs}]
   end
 
   defp elixirc_paths(env) when env in [:test, :dev], do: ["lib", "examples"]
