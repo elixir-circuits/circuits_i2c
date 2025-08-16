@@ -17,7 +17,7 @@ SPDX-FileCopyrightText = "None"
 SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
-path = ["c_src/linux/i2c-dev.h"]
+path = ["i2c_dev/c_src/linux/i2c-dev.h"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "None"
 SPDX-License-Identifier = "GPL-2.0-or-later WITH Linux-syscall-note"
