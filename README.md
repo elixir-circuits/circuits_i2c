@@ -48,13 +48,32 @@ may be helpful.
 
 Internally, it uses the [Linux "i2c-dev"
 interface](https://elixir.bootlin.com/linux/latest/source/Documentation/i2c/dev-interface)
-so that it does not require board-dependent code.
+so that it does not require board-dependent code. See the application
+configuration for disabling all things Linux/Nerves specific.
 
 ## Getting started without hardware
 
 If you don't have any real I2C devices, it's possible to work with simulated
 devices. See the [CircuitsSim](https://github.com/elixir-circuits/circuits_sim)
 project for details.
+
+## Application config
+
+`Circuits.I2C` supports the following application environment keys:
+
+| Key | Description |
+| --- | ----------- |
+| `:include_i2c_dev` | Set to `true` or `false` to indicate whether or not to include the `Circuits.I2C.I2CDev` backend. |
+| `:default_backend` | Default I2C backend to use when unspecified in API calls. The format is either a module name or a `{module_name, options}` tuple. |
+
+`Circuits.I2C` uses a heuristic for the default values of both
+`:include_i2c_dev`. For example, if the `:default_backend` is set to
+`Circuits.I2C.I2CDev`, then `:include_i2c_dev` has to be `true`. If
+`:default_backend` is set to something else, then `:include_i2c_dev` defaults to
+`false`. If neither is set, then `Circuits.I2C.I2CDev` is built. On non-Linux
+platforms, the `Circuits.I2C.I2CDev` NIF will be compiled in test mode which
+minimally supports unit testing. Mocking is generally a better option for most
+users, though.
 
 ## I2C background
 
