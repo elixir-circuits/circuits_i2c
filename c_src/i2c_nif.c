@@ -30,8 +30,10 @@ int test_open(const char *path, int flags)
         return 0x20;
     else if (strcmp(path, "/dev/i2c-flaky") == 0)
         return 0x30;
-    else
+    else {
+        errno = ENOENT;
         return -1;
+    }
 }
 int test_close(int fd)
 {
