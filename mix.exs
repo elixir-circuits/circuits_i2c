@@ -1,13 +1,14 @@
 defmodule Circuits.I2C.MixProject do
   use Mix.Project
 
+  @app :circuits_i2c
   @version "2.1.0"
   @description "Use I2C in Elixir"
-  @source_url "https://github.com/elixir-circuits/circuits_i2c"
+  @source_url "https://github.com/elixir-circuits/#{@app}"
 
   def project do
     [
-      app: :circuits_i2c,
+      app: @app,
       version: @version,
       elixir: "~> 1.13",
       description: @description,
@@ -58,9 +59,9 @@ defmodule Circuits.I2C.MixProject do
       ],
       licenses: ["Apache-2.0"],
       links: %{
+        "Changelog" => "https://hexdocs.pm/#{@app}/changelog.html",
         "GitHub" => @source_url,
-        "REUSE Compliance" =>
-          "https://api.reuse.software/info/github.com/elixir-circuits/circuits_i2c"
+        "REUSE Compliance" => "https://api.reuse.software/info/github.com/elixir-circuits/#{@app}"
       }
     }
   end
