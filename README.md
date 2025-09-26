@@ -1,3 +1,8 @@
+<!--
+  SPDX-License-Identifier: CC-BY-4.0
+  SPDX-FileCopyrightText: 2014 Frank Hunleth
+-->
+
 # Circuits.I2C
 
 [![Hex version](https://img.shields.io/hexpm/v/circuits_i2c.svg "Hex version")](https://hex.pm/packages/circuits_i2c)
