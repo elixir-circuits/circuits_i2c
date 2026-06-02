@@ -6,7 +6,7 @@
 # Circuits.I2C
 
 [![Hex version](https://img.shields.io/hexpm/v/circuits_i2c.svg "Hex version")](https://hex.pm/packages/circuits_i2c)
-[![API docs](https://img.shields.io/hexpm/v/circuits_i2c.svg?label=hexdocs "API docs")](https://hexdocs.pm/circuits_i2c/Circuits.I2C.html)
+[![API docs](https://img.shields.io/hexpm/v/circuits_i2c.svg?label=hexdocs "API docs")](https://circuits-i2c.hexdocs.pm/Circuits.I2C.html)
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/elixir-circuits/circuits_i2c/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/elixir-circuits/circuits_i2c/tree/main)
 [![REUSE status](https://api.reuse.software/badge/github.com/elixir-circuits/circuits_i2c)](https://api.reuse.software/info/github.com/elixir-circuits/circuits_i2c)
 
