@@ -14,7 +14,7 @@
 # Variables to override:
 #
 # MIX_APP_PATH  path to the build directory
-# CIRCUITS_I2C_I2CDEV Backend to build - `"normal"`, `"test"`, or `"disabled"` will build a NIF
+# CIRCUITS_I2C_I2CDEV Backend to build - `"normal"` or `"test"`
 #
 # CC            C compiler
 # CROSSCOMPILE	crosscompiler prefix, if any
@@ -30,7 +30,7 @@ BUILD  = $(MIX_APP_PATH)/obj
 
 NIF = $(PREFIX)/i2c_nif.so
 
-SRC = c_src/i2c_nif.c
+SRC = i2c_dev/c_src/i2c_nif.c
 CFLAGS ?= -O2 -Wall -Wextra -Wno-unused-parameter -pedantic
 
 # Check that we're on a supported build platform
@@ -40,7 +40,7 @@ ifeq ($(shell uname -s),Linux)
 CFLAGS += -fPIC
 LDFLAGS += -fPIC -shared
 else
-CFLAGS += -Ic_src/compat
+CFLAGS += -Ii2c_dev/c_src/compat
 LDFLAGS += -undefined dynamic_lookup -dynamiclib
 ifeq ($(CIRCUITS_I2C_I2CDEV),normal)
 $(error Circuits.I2C Linux I2CDev backend is not supported on non-Linux platforms. Review circuits_i2c backend configuration or report an issue if improperly detected.)
@@ -59,8 +59,7 @@ ifeq ($(CIRCUITS_I2C_I2CDEV),test)
 # Stub out ioctls and send back test data
 CFLAGS += -DTEST_BACKEND
 else
-# Don't build NIF
-NIF =
+$(error Invalid CIRCUITS_I2C_I2CDEV value: $(CIRCUITS_I2C_I2CDEV))
 endif
 endif
 
@@ -68,8 +67,8 @@ endif
 ERL_CFLAGS ?= -I"$(ERL_EI_INCLUDE_DIR)"
 ERL_LDFLAGS ?= -L"$(ERL_EI_LIBDIR)" -lei
 
-HEADERS =$(wildcard c_src/*.h)
-OBJ = $(SRC:c_src/%.c=$(BUILD)/%.o)
+HEADERS =$(wildcard i2c_dev/c_src/*.h)
+OBJ = $(SRC:i2c_dev/c_src/%.c=$(BUILD)/%.o)
 
 calling_from_make:
 	mix compile
@@ -80,7 +79,7 @@ install: $(PREFIX) $(BUILD) $(NIF)
 
 $(OBJ): $(HEADERS) Makefile
 
-$(BUILD)/%.o: c_src/%.c
+$(BUILD)/%.o: i2c_dev/c_src/%.c
 	@echo " CC $(notdir $@)"
 	$(CC) -c $(ERL_CFLAGS) $(CFLAGS) -o $@ $<
 
