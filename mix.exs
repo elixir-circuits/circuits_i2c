@@ -2,7 +2,7 @@ defmodule Circuits.I2C.MixProject do
   use Mix.Project
 
   @app :circuits_i2c
-  @version "2.1.0"
+  @version "2.1.1"
   @description "Use I2C in Elixir"
   @source_url "https://github.com/elixir-circuits/#{@app}"
 
