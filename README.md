@@ -63,6 +63,50 @@ If you don't have any real I2C devices, it's possible to work with simulated
 devices. See the [CircuitsSim](https://github.com/elixir-circuits/circuits_sim)
 project for details.
 
+## Getting started on AtomVM
+
+`Circuits.I2C.AtomVM` uses the AtomVM 0.6 `:i2c` driver. It has no fixed board
+or pin assignments: configure named buses with the driver parameters supported
+by your target device. The following is an ESP32 example; adjust the peripheral
+name, pins, and clock speed for your hardware:
+
+```elixir
+alias Circuits.I2C
+
+options = [
+  buses: [
+    {"i2c0", [peripheral: "i2c0", scl: 22, sda: 21, clock_speed_hz: 100_000]}
+  ],
+  retries: 1
+]
+
+{:ok, bus} = I2C.AtomVM.open("i2c0", options)
+{:ok, data} = I2C.write_read(bus, 0x48, <<0>>, 2)
+:ok = I2C.close(bus)
+```
+
+Disable the Linux NIF when building your AtomVM project:
+
+```elixir
+# config/config.exs
+import Config
+config :circuits_i2c, include_i2c_dev: false
+```
+
+Include the AtomVM `:i2c` module in your firmware. Open this backend directly:
+AtomVM 0.6 does not implement the OTP application environment used by
+`Circuits.I2C.open/2` and `Circuits.I2C.bus_names/0`. Use
+`Circuits.I2C.AtomVM.bus_names(options)` to enumerate the configured buses.
+Once opened, the usual `Circuits.I2C` transfer functions work with the bus.
+
+Combined `write_read` transfers support a single-byte register address, using
+AtomVM's repeated-start register read. Longer write payloads return
+`{:error, :not_supported}` without a transfer; an empty write payload performs
+just a read. Retries are supported, including per-transfer overrides, but
+configurable transaction timeouts and empty-write probing are not. Always close
+the bus explicitly to free the AtomVM driver; it is not a garbage-collected NIF
+resource.
+
 ## Application config
 
 `Circuits.I2C` supports the following application environment keys:
