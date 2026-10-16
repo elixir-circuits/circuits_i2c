@@ -5,6 +5,8 @@
 defmodule Circuits.I2CNifTest do
   use ExUnit.Case
 
+  import ExUnit.CaptureLog
+
   alias Circuits.I2C.Nif
 
   describe "info/0" do
@@ -68,6 +70,82 @@ defmodule Circuits.I2CNifTest do
   end
 
   describe "load tests" do
+    test "hot reload preserves open bus handle" do
+      assert {:module, Nif} == :code.ensure_loaded(Nif)
+      {:ok, i2c, _flags} = Nif.open("i2c-test-0", -1)
+
+      try do
+        assert {:ok, <<0x10, 0x11, 0x12>>} == Nif.read(i2c, 0x10, 3, 0)
+
+        {Nif, binary, filename} = :code.get_object_code(Nif)
+
+        for _times <- 1..3 do
+          # Simulate a hot code reload by manually loading the binary again
+          assert {:module, Nif} == :code.load_binary(Nif, filename, binary)
+          assert :code.soft_purge(Nif)
+
+          # Reference still works
+          assert {:ok, <<0x10, 0x11, 0x12>>} == Nif.read(i2c, 0x10, 3, 0)
+          assert :ok == Nif.write(i2c, 0x10, <<1>>, 0)
+        end
+      after
+        assert :ok == Nif.close(i2c)
+      end
+    end
+
+    @tag :tmp_dir
+    test "hot reload fails on ABI mismatch", %{tmp_dir: tmp_dir} do
+      assert {:module, Nif} == :code.ensure_loaded(Nif)
+
+      original_app_dir = Application.app_dir(:circuits_i2c)
+      original_ebin = String.to_charlist(Path.join(original_app_dir, "ebin"))
+
+      on_exit(fn ->
+        assert true == :code.replace_path(:circuits_i2c, original_ebin)
+      end)
+
+      app_dir = create_incompatible_app(original_app_dir, tmp_dir)
+      {:ok, i2c, _flags} = Nif.open("i2c-test-0", -1)
+
+      try do
+        true = :code.replace_path(:circuits_i2c, String.to_charlist(Path.join(app_dir, "ebin")))
+
+        log =
+          capture_log(fn ->
+            assert {:error, :on_load_failure} = :code.load_file(Nif)
+            # OTP emits the on_load failure warning asynchronously so wait a bit
+            Process.sleep(10)
+          end)
+
+        assert log =~ "[warning] The on_load function for module Elixir.Circuits.I2C.Nif returned"
+        assert {:ok, <<0x10, 0x11, 0x12>>} == Nif.read(i2c, 0x10, 3, 0)
+      after
+        assert :ok == Nif.close(i2c)
+      end
+    end
+
+    defp create_incompatible_app(src_app_dir, tmp_dir) do
+      new_app_dir = Path.join(tmp_dir, "circuits_i2c")
+      File.cp_r!(src_app_dir, new_app_dir)
+
+      # Binary patch the shared library to give it a new ABI
+      nif_path = Path.join(new_app_dir, "priv/i2c_nif.so")
+      original_nif = File.read!(nif_path)
+      new_nif = :binary.replace(original_nif, "i2c_nif_res_v1", "i2c_nif_res_v2")
+      assert original_nif != new_nif
+      File.write!(nif_path, new_nif)
+      code_sign(nif_path, :os.type())
+
+      new_app_dir
+    end
+
+    defp code_sign(path, {:unix, :darwin}) do
+      {_, 0} = System.cmd("codesign", ["--force", "--sign", "-", path], stderr_to_stdout: true)
+      :ok
+    end
+
+    defp code_sign(_path, _other), do: :ok
+
     test "unloading NIF" do
       # The theory here is that there shouldn't be a crash if this is reloaded a
       # few times.

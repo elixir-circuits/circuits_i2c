@@ -115,10 +115,14 @@ int test_ioctl(int fd, unsigned long request, ...)
 #define elapsed_microseconds() 0
 #endif
 
-// I2C NIF Resource.
+// I2C NIF Resource
 struct I2cNifRes {
     int fd;
 };
+
+// IMPORTANT: Bump the version number in the type whenever changing I2CNifRes. This
+// ensures that hot code updates fail on ABI changes.
+#define I2C_NIF_RES_TYPE "i2c_nif_res_v1"
 
 // I2C NIF Private data
 struct I2cNifPriv {
@@ -142,24 +146,23 @@ static void i2c_dtor(ErlNifEnv *env, void *obj)
     }
 }
 
-static int i2c_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM info)
+static int i2c_init(ErlNifEnv *env, void **priv_data, ErlNifResourceFlags flags)
 {
 #ifdef DEBUG
 #ifdef LOG_PATH
     log_location = fopen(LOG_PATH, "w");
 #endif
 #endif
-    debug("i2c_load");
-
     struct I2cNifPriv *priv = enif_alloc(sizeof(struct I2cNifPriv));
     if (!priv) {
         error("Can't allocate i2c priv");
         return 1;
     }
 
-    priv->i2c_nif_res_type = enif_open_resource_type(env, NULL, "i2c_nif_res_type", i2c_dtor, ERL_NIF_RT_CREATE, NULL);
+    priv->i2c_nif_res_type = enif_open_resource_type(env, NULL, I2C_NIF_RES_TYPE, i2c_dtor, flags, NULL);
     if (priv->i2c_nif_res_type == NULL) {
-        error("open I2C NIF resource type failed");
+        error("Error opening I2C NIF resource type. If upgrading, this indicates an ABI mismatch.");
+        enif_free(priv);
         return 1;
     }
 
@@ -171,6 +174,18 @@ static int i2c_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM info)
 
     *priv_data = priv;
     return 0;
+}
+
+static int i2c_load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM info)
+{
+    debug("i2c_load");
+    return i2c_init(env, priv_data, ERL_NIF_RT_CREATE);
+}
+
+static int i2c_upgrade(ErlNifEnv *env, void **priv_data, void **old_priv_data, ERL_NIF_TERM info)
+{
+    debug("i2c_upgrade");
+    return i2c_init(env, priv_data, ERL_NIF_RT_TAKEOVER);
 }
 
 static void i2c_unload(ErlNifEnv *env, void *priv_data)
@@ -444,4 +459,4 @@ static ErlNifFunc nif_funcs[] =
     {"info", 0, i2c_info, 0}
 };
 
-ERL_NIF_INIT(Elixir.Circuits.I2C.Nif, nif_funcs, i2c_load, NULL, NULL, i2c_unload)
+ERL_NIF_INIT(Elixir.Circuits.I2C.Nif, nif_funcs, i2c_load, NULL, i2c_upgrade, i2c_unload)
