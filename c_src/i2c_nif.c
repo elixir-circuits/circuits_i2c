@@ -110,7 +110,7 @@ int test_ioctl(int fd, unsigned long request, ...)
 #define elapsed_microseconds() (enif_monotonic_time(ERL_NIF_USEC) - __start)
 #else
 #define debug(...)
-#define error(...) do { enif_fprintf(stderr, __VA_ARGS__); enif_fprintf(stderr, "\n"); } while(0)
+#define error(...)
 #define start_timing()
 #define elapsed_microseconds() 0
 #endif
