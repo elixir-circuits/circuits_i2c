@@ -25,3 +25,6 @@ circuits_i2c-*.tar
 # Ignore C object files and executables
 /priv
 *.o
+
+# Temporary directories created by ExUnit tests tagged with :tmp_dir
+/tmp/
