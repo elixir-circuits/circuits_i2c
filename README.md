@@ -1,6 +1,10 @@
 <!--
-  SPDX-License-Identifier: CC-BY-4.0
   SPDX-FileCopyrightText: 2014 Frank Hunleth
+  SPDX-FileCopyrightText: 2017 Graham McIntire
+  SPDX-FileCopyrightText: 2018 Mark Sebald
+  SPDX-FileCopyrightText: 2019 Elliott Hilaire
+  SPDX-FileCopyrightText: 2020 Justin Schneck
+  SPDX-License-Identifier: CC-BY-4.0
 -->
 
 # Circuits.I2C

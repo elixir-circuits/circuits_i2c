@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2018 Frank Hunleth
 // SPDX-FileCopyrightText: 2018 Mark Sebald
 // SPDX-FileCopyrightText: 2018 Matt Ludwigs
+// SPDX-FileCopyrightText: 2026 Lars Wikman
 //
 // SPDX-License-Identifier: Apache-2.0
 

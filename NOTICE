@@ -1,8 +1,9 @@
 CircuitsI2C is open-source software licensed under the Apache License, Version
 2.0.
 
-Copyright holders include Frank Hunleth, Connor Rigby, Mark Sebald, Matt
-Ludwigs, Justin Schneck, Bruce Tate, Masatoshi Nishiguchi and Jon Carstens.
+Copyright holders include Frank Hunleth, Connor Rigby, Graham McIntire, Mark
+Sebald, Matt Ludwigs, Elliott Hilaire, Justin Schneck, Bruce Tate, Masatoshi
+Nishiguchi, Jon Carstens and Lars Wikman.
 
 Authoritative REUSE-compliant copyright and license metadata is available at
 https://hex.pm/packages/circuits_i2c.

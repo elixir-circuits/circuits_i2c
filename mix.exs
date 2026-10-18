@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: None
+#
+# SPDX-License-Identifier: CC0-1.0
 defmodule Circuits.I2C.MixProject do
   use Mix.Project
 

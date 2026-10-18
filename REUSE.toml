@@ -1,15 +1,12 @@
+# SPDX-FileCopyrightText: None
+#
+# SPDX-License-Identifier: CC0-1.0
+
 version = 1
 
 [[annotations]]
 path = [
- ".circleci/config.yml",
- ".credo.exs",
- ".formatter.exs",
- ".github/dependabot.yml",
- ".gitignore",
  "NOTICE",
- "REUSE.toml",
- "mix.exs",
  "mix.lock"
 ]
 precedence = "aggregate"

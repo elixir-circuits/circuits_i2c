@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2014 Frank Hunleth
 # SPDX-FileCopyrightText: 2021 Masatoshi Nishiguchi
+# SPDX-FileCopyrightText: 2026 Lars Wikman
 #
 # SPDX-License-Identifier: Apache-2.0
 
