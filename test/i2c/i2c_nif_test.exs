@@ -115,7 +115,7 @@ defmodule Circuits.I2CNifTest do
           capture_log(fn ->
             assert {:error, :on_load_failure} = :code.load_file(Nif)
             # OTP emits the on_load failure warning asynchronously so wait a bit
-            Process.sleep(10)
+            Process.sleep(50)
           end)
 
         assert log =~ "[warning] The on_load function for module Elixir.Circuits.I2C.Nif returned"
