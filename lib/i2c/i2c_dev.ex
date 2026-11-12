@@ -21,23 +21,31 @@ defmodule Circuits.I2C.I2CDev do
 
   No supported options
   """
-  case System.get_env("CIRCUITS_I2C_I2CDEV") do
-    "test" ->
-      @impl Backend
-      def bus_names(_options), do: ["i2c-test-0", "i2c-test-1", "i2c-flaky"]
+  @impl Backend
+  def bus_names(_options) do
+    case nif_build() do
+      :test ->
+        ["i2c-test-0", "i2c-test-1", "i2c-flaky"]
 
-    "normal" ->
-      @impl Backend
-      def bus_names(_options) do
+      :normal ->
         Path.wildcard("/dev/i2c-*")
         |> Enum.map(fn p -> String.replace_prefix(p, "/dev/", "") end)
-      end
 
-    _ ->
-      @impl Backend
-      def bus_names(_options) do
+      :disabled ->
         []
-      end
+    end
+  end
+
+  # The NIF is built in "normal", "test" or "disabled" mode depending on the
+  # backend configuration (see `mix.exs`). Ask the build itself rather than
+  # reading CIRCUITS_I2C_I2CDEV at compile time so that the compiled Elixir
+  # code doesn't depend on an environment variable.
+  defp nif_build() do
+    cond do
+      not File.exists?(Path.join(:code.priv_dir(:circuits_i2c), "i2c_nif.so")) -> :disabled
+      Map.get(Nif.info(), :test?, false) -> :test
+      true -> :normal
+    end
   end
 
   @doc """
